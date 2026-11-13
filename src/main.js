@@ -1,4 +1,6 @@
 import './style.css';
+import {Atmosphere} from './atmosphere.js';
+const atmosphere=new Atmosphere();
 import {createWorld} from './world.js';
 import {Input} from './input.js';
 import {movePlayer} from './physics.js';
@@ -20,7 +22,7 @@ if(new URLSearchParams(location.search).has('diagnostics')){
  const diagnostics=document.createElement('pre');diagnostics.id='diagnostics';diagnostics.style.cssText='position:fixed;z-index:100;top:90px;left:10px;max-width:95vw;white-space:pre-wrap;background:#000d;color:#bfffbf;padding:12px;font:12px monospace;pointer-events:none';document.body.append(diagnostics);
  window.addEventListener('error',e=>{diagnosticError=e.message;});
  window.addEventListener('unhandledrejection',e=>{diagnosticError=String(e.reason);});
- setInterval(()=>{diagnostics.textContent=JSON.stringify({frames:renderedFrames,mode,paused,visible:document.visibilityState,webgl:world?.engine.webGLVersion,fps:renderedFrames>1?Math.round(world?.engine.getFps()||0):null,ready:world?.scene.isReady(),contextLost:world?.engine.isContextLost,canvas:[canvas.width,canvas.height],error:diagnosticError},null,2);},500);
+ setInterval(()=>{diagnostics.textContent=JSON.stringify({frames:renderedFrames,mode,paused,visible:document.visibilityState,webgl:world?.engine.webGLVersion,fps:renderedFrames>1?Math.round(world?.engine.getFps()||0):null,ready:world?.scene.isReady(),contextLost:world?.engine.isContextLost,canvas:[canvas.width,canvas.height],position:world?[world.camera.position.x,world.camera.position.z].map(n=>+n.toFixed(2)):null,look:world?[world.camera.rotation.x,world.camera.rotation.y].map(n=>+n.toFixed(2)):null,error:diagnosticError},null,2);},500);
 }
 
 function save(){sound.sync(settings);document.body.classList.toggle('touch',settings.mobile);document.body.classList.toggle('no-motion',!settings.motion);try{localStorage.setItem('verity-3d-settings',JSON.stringify(settings));}catch{}}
@@ -32,11 +34,11 @@ function showSubtitle(data,hasAudio){
 function setPaused(value){paused=value;input?.setActive(!value&&mode==='game');sound.pause(value);if(value)last=performance.now();}
 function menu(){
  mode='menu';setPaused(true);dialogue?.stop();$('#hud').hidden=true;
- screen.innerHTML=`<main class="menu"><header><span class="eyebrow">ИСТОРИЯ О ДОВЕРИИ</span><span class="build">3D / ПЕРВЫЙ ЭПИЗОД</span></header><div class="menu-copy"><p class="eyebrow">ОДИН ДРУГ. ДВЕ ДВЕРИ.</p><h1>НЕ ВЕРЬ<br><em>ВЕРИТИ!</em></h1><p class="tagline">Он знает выход.<br>По крайней мере, так он говорит.</p><button class="primary" data-ui="start">Начать игру <span>↗</span></button><button class="secondary" data-ui="settings">Настройки</button><p class="warning">△ Тревожная атмосфера, изменения света и звуки.<br>Выберите комфортную громкость.</p></div><footer><span>ОТ ПЕРВОГО ЛИЦА</span><span>МЫШЬ И КЛАВИАТУРА / КАСАНИЕ</span></footer></main>`;
+ screen.innerHTML=`<main class="menu"><header><span class="eyebrow">ИСТОРИЯ О ДОВЕРИИ</span><span class="build">0.3 / ПЕРВЫЙ ЭПИЗОД</span></header><div class="menu-copy"><p class="eyebrow">ОДИН ДРУГ. ДВЕ ДВЕРИ.</p><h1>НЕ ВЕРЬ<br><em>ВЕРИТИ!</em></h1><p class="tagline">Он знает выход.<br>По крайней мере, так он говорит.</p><button class="primary" data-ui="start">Начать игру <span>↗</span></button><button class="secondary" data-ui="settings">Настройки</button><p class="warning">△ Тревожная атмосфера, изменения света и звуки.<br>Выберите комфортную громкость.</p></div><footer><span>ОТ ПЕРВОГО ЛИЦА</span><span>МЫШЬ И КЛАВИАТУРА / КАСАНИЕ</span></footer></main>`;
  screen.hidden=false;document.body.classList.add('in-menu');
 }
 async function start(){
- setPaused(true);state=initialState();shownZones.clear();time=0;stepTime=0;lastInteract=-1;world.reset();dialogue.stop();mode='game';screen.hidden=true;screen.innerHTML='';$('#hud').hidden=false;document.body.classList.remove('in-menu');save();await sound.start();setPaused(false);last=performance.now();canvas.focus();updateHud();dialogue.say('wake');
+ setPaused(true);state=initialState();atmosphere.reset();shownZones.clear();time=0;stepTime=0;lastInteract=-1;world.reset();dialogue.stop();mode='game';screen.hidden=true;screen.innerHTML='';$('#hud').hidden=false;document.body.classList.remove('in-menu');save();await sound.start();setPaused(false);last=performance.now();canvas.focus();updateHud();dialogue.say('wake');
 }
 function pause(){if(mode!=='game'||paused)return;setPaused(true);pauseScreen();}
 function pauseScreen(){screen.hidden=false;screen.innerHTML=`<div class="modal-wrap"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="pause-title"><p class="eyebrow">НЕ ВЕРЬ ВЕРИТИ!</p><h2 id="pause-title">Можно перевести дух.</h2><p class="muted">Игра и звук приостановлены.</p><button class="primary" data-ui="resume">Продолжить <span>↗</span></button><button class="secondary" data-ui="settings">Настройки</button><button class="text-button" data-ui="restart">Начать заново</button><button class="text-button" data-ui="menu">В главное меню</button></section></div>`;screen.querySelector('button').focus();}
@@ -66,10 +68,12 @@ function frame(){
   const dx=(Math.sin(yaw)*v.forward+Math.cos(yaw)*v.side)*speed*dt,dz=(Math.cos(yaw)*v.forward-Math.sin(yaw)*v.side)*speed*dt;
   const p=movePlayer(camera.position,dx,dz,world.obstacles);const moved=Math.hypot(p.x-camera.position.x,p.z-camera.position.z);camera.position.x=p.x;camera.position.z=p.z;
   const bob=settings.motion&&moved>.001?Math.sin(time*11)*.012:0;camera.position.y=1.65+bob;
-  if(moved>.001){stepTime+=dt;if(stepTime>.48){sound.effect('step');stepTime=0;}}
+  if(moved>.001){stepTime+=dt;if(stepTime>.48){sound.effect('step',camera.position.z>5?'carpet':'wood');stepTime=0;}}
   const zone=camera.position.z>26?'doors':camera.position.z>5?'corridor':'bedroom';
   if(zone!==state.zone){state.zone=zone;updateHud();if(zone!=='bedroom'&&!shownZones.has(zone)){shownZones.add(zone);dialogue.say(zone==='doors'?'doors':'corridor');}}
   if(camera.position.z>17&&!shownZones.has('middle')){shownZones.add('middle');dialogue.say('middle');}
+  sound.setListener(camera.position,camera.rotation.y);
+  const ambientEvent=atmosphere.update(time,zone);if(ambientEvent){sound.ambientEvent(ambientEvent.kind,ambientEvent.position);if(zone!=='bedroom')world.disturb(time);}
   world.update(time,dt,settings.motion);dialogue.tick(dt);
   const hit=world.scene.pickWithRay(camera.getForwardRay(2.55),mesh=>mesh.isPickable&&mesh.isEnabled());
   target=hit?.hit?hit.pickedMesh.metadata?.action:null;

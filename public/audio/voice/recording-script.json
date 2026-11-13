@@ -1,0 +1,132 @@
+{
+  "version": "0.3",
+  "status": "recordings-required",
+  "lines": [
+    {
+      "id": "wake",
+      "speaker": "Вы",
+      "text": "Моя комната… Только тишина какая-то чужая.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "box",
+      "speaker": "Верити",
+      "text": "Привет! Я Верити. Не бойся, я помогу тебе выбраться. В ящике стола должен быть предохранитель.",
+      "emotion": "friendly",
+      "file": "audio/voice/01-hello.mp3"
+    },
+    {
+      "id": "boxAgain",
+      "speaker": "Верити",
+      "text": "Спасибо, что выпустил меня. Теперь давай включим свет.",
+      "emotion": "friendly",
+      "file": "audio/voice/02-box.mp3"
+    },
+    {
+      "id": "drawerLocked",
+      "speaker": "Вы",
+      "text": "Ящик заедает. На столе осталась записка: «Запасной предохранитель».",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "fuse",
+      "speaker": "Верити",
+      "text": "Вот он! Поставь его в щиток рядом с дверью. Потом подними выключатель.",
+      "emotion": "friendly",
+      "file": "audio/voice/03-fuse.mp3"
+    },
+    {
+      "id": "fuseAgain",
+      "speaker": "Вы",
+      "text": "Предохранитель уже у меня.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "panelEmpty",
+      "speaker": "Вы",
+      "text": "Пустое гнездо. Не хватает предохранителя.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "installed",
+      "speaker": "Верити",
+      "text": "Отлично. Теперь подними выключатель — и будет свет!",
+      "emotion": "friendly",
+      "file": "audio/voice/04-switch.mp3"
+    },
+    {
+      "id": "light",
+      "speaker": "Верити",
+      "text": "Видишь? Уже лучше. Дверь теперь должна открыться. Я с тобой.",
+      "emotion": "friendly",
+      "file": "audio/voice/05-light.mp3"
+    },
+    {
+      "id": "panelOn",
+      "speaker": "Вы",
+      "text": "Электричество работает. Пора выходить.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "locked",
+      "speaker": "Вы",
+      "text": "Не открывается. Электрический замок обесточен.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "exit",
+      "speaker": "Вы",
+      "text": "Замок щёлкнул. Можно идти.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "bed",
+      "speaker": "Вы",
+      "text": "Одеяло ещё тёплое. Значит, я только что проснулся.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "window",
+      "speaker": "Вы",
+      "text": "За стеклом темно. Даже соседних окон не видно.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "wardrobe",
+      "speaker": "Вы",
+      "text": "Моя одежда. Всё на своих местах. Почти всё.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "corridor",
+      "speaker": "Верити",
+      "text": "Просто иди вперёд. Здесь немного… непривычно.",
+      "emotion": "suspicious",
+      "file": "audio/voice/06-corridor.mp3"
+    },
+    {
+      "id": "middle",
+      "speaker": "Вы",
+      "text": "Гул не становится тише. Этот коридор длиннее, чем должен быть.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "doors",
+      "speaker": "Верити",
+      "text": "Вот! Красивая дверь слева. Там тепло. Выбери её, хорошо?",
+      "emotion": "suspicious",
+      "file": "audio/voice/07-doors.mp3"
+    }
+  ]
+}

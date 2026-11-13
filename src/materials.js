@@ -17,12 +17,16 @@ export function materials(scene){
    for(let x=16;x<256;x+=32)for(let y=16;y<256;y+=48){c.beginPath();c.moveTo(x,y-10);c.lineTo(x+5,y);c.lineTo(x,y+10);c.lineTo(x-5,y);c.closePath();c.stroke();}
    for(let i=0;i<12;i++){const g=c.createRadialGradient(random()*256,random()*256,1,128,128,190);g.addColorStop(0,'rgba(35,33,18,.035)');g.addColorStop(1,'transparent');c.fillStyle=g;c.fillRect(0,0,256,256);}
   }
+  if(type==='carpet'||type==='fabric'){for(let y=0;y<256;y+=3){c.fillStyle='rgba(9,16,12,.11)';c.fillRect(0,y,256,1);}for(let x=0;x<256;x+=4){c.fillStyle='rgba(220,215,178,.08)';c.fillRect(x,0,1,256);}}
   if(type==='wood'){c.fillStyle='rgba(0,0,0,.25)';[0,64,128,192].forEach(x=>c.fillRect(x,0,2,256));}
   if(type==='metal'){for(let i=0;i<32;i++){c.fillStyle=`rgba(131,57,22,${random()*.4})`;c.fillRect(random()*256,random()*256,random()*25,random()*40);}}
   if(type==='ceiling'){c.strokeStyle='#56564a';c.strokeRect(0,0,256,256);}
-  t.update();t.uScale=scale;t.vScale=scale;t.wrapU=t.wrapV=Texture.WRAP_ADDRESSMODE;m.diffuseTexture=t;return m;
+  t.update();
+  const bump=new DynamicTexture(name+'-relief',{width:128,height:128},scene,false);const bc=bump.getContext();bc.fillStyle='#8080ff';bc.fillRect(0,0,128,128);for(let i=0;i<3000;i++){const v=Math.floor(104+random()*48);bc.fillStyle=`rgb(${v},${256-v},255)`;bc.fillRect(random()*128,random()*128,type==='wood'?1:2,type==='wood'?12:1);}bump.update();bump.uScale=bump.vScale=scale;bump.level=.13;m.bumpTexture=bump;
+  t.uScale=scale;t.vScale=scale;t.wrapU=t.wrapV=Texture.WRAP_ADDRESSMODE;m.diffuseTexture=t;return m;
  }
  const result={
+  curtain:textured('curtain-weave','#5f6865','fabric',2),
   wall:textured('old-sage-wall','#777969','wall',2),hall:textured('yellow-wallpaper','#9d9267','wall',3),
   floor:textured('bedroom-planks','#64513b','wood',5),carpet:textured('dirty-carpet','#60593b','carpet',9),
   wood:textured('walnut','#534034','wood',1),lightWood:textured('boards','#80613c','wood',1),

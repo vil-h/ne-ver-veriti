@@ -15,8 +15,9 @@ export class Dialogue {
    if(token!==this.token||!buffer)return;
    this.remaining=Infinity;this.show(data,true);this.verity.setTalking(true);
    this.source=this.sound.playVoice(buffer,data.emotion,()=>{if(token===this.token){this.verity.setTalking(false);this.remaining=1;this.source=null;}});
-  }catch{if(token===this.token)this.show(data,false);}
+   if(!this.source){this.remaining=Math.max(5,data.text.length/12);this.verity.setTalking(false);this.show(data,false);}
+  }catch{if(token===this.token){this.remaining=Math.max(5,data.text.length/12);this.verity.setTalking(false);this.show(data,false);}}
  }
- tick(dt){if(!this.current)return;this.remaining-=dt;if(this.remaining<=0){this.current=null;this.show(null,false);this.verity.setTalking(false);}}
+ tick(dt){this.verity.setAmplitude?.(this.source?this.sound.voiceLevel?.()||0:0);if(!this.current)return;this.remaining-=dt;if(this.remaining<=0){this.current=null;this.show(null,false);this.verity.setTalking(false);}}
  stop(){++this.token;if(this.source){this.source.onended=null;this.source.stop();this.source=null;}this.current=null;this.verity.setTalking(false);this.show(null,false);}
 }

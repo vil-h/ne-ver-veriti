@@ -23,3 +23,12 @@ test('Новая реплика прерывает предыдущую запи
 test('Ошибка файла оставляет текст и не запускает анимацию речи',async()=>{
  const {dialogue,events}=setup();dialogue.manifest={files:{'audio/voice/01-hello.ogg':'missing.mp3'}};dialogue.sound.loadVoice=async()=>{throw new Error('404');};await dialogue.say('box');assert.ok(dialogue.current);assert.equal(events.some(e=>e[0]==='talk'&&e[1]===true),false);
 });
+test('Неудачный запуск декодированной записи не оставляет бесконечные субтитры',async()=>{
+ const {dialogue}=setup();dialogue.manifest={files:{'audio/voice/01-hello.ogg':'hello.mp3'}};
+ dialogue.sound.playVoice=()=>null;await dialogue.say('box');assert.ok(Number.isFinite(dialogue.remaining));dialogue.tick(100);assert.equal(dialogue.current,null);
+});
+test('Поздняя загрузка старой записи не прерывает новый диалог',async()=>{
+ const {dialogue,events}=setup();let resolve;dialogue.manifest={files:{'audio/voice/01-hello.ogg':'hello.mp3'}};
+ dialogue.sound.loadVoice=()=>new Promise(r=>resolve=r);const loading=dialogue.say('box');await dialogue.say('wake');resolve({duration:2});await loading;
+ assert.equal(dialogue.current.speaker,'Вы');assert.equal(events.some(e=>e[0]==='audio'),false);
+});

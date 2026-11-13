@@ -13,6 +13,7 @@ import {HemisphericLight} from '@babylonjs/core/Lights/hemisphericLight.js';
 import {ShadowGenerator} from '@babylonjs/core/Lights/Shadows/shadowGenerator.js';
 import {DynamicTexture} from '@babylonjs/core/Materials/Textures/dynamicTexture.js';
 import {StandardMaterial} from '@babylonjs/core/Materials/standardMaterial.js';
+import {polishWorld} from './polish.js';
 import {materials} from './materials.js';
 import {createVerity} from './verity.js';
 export function createWorld(canvas,quality='medium'){
@@ -21,9 +22,9 @@ export function createWorld(canvas,quality='medium'){
  scene.imageProcessingConfiguration.exposure=1.18;scene.imageProcessingConfiguration.contrast=1.18;scene.imageProcessingConfiguration.toneMappingEnabled=true;
  const camera=new UniversalCamera('eyes',new Vector3(0,1.65,-3.3),scene);camera.inputs.clear();camera.minZ=.06;camera.maxZ=70;camera.fov=1.12;camera.rotation.x=.13;
  const m=materials(scene),obstacles=[],targets=[],hallLights=[];
- const ambient=new HemisphericLight('ambient',new Vector3(0,1,0),scene);ambient.intensity=.32;ambient.diffuse=new Color3(.72,.76,.65);ambient.groundColor=new Color3(.14,.17,.16);
+ const ambient=new HemisphericLight('ambient',new Vector3(0,1,0),scene);ambient.intensity=.24;ambient.diffuse=new Color3(.72,.76,.65);ambient.groundColor=new Color3(.14,.17,.16);
  const lamp=new SpotLight('bedroom-lamp',new Vector3(0,3.04,0),new Vector3(0,-1,0),2.5,1.5,scene);lamp.diffuse=new Color3(1,.8,.48);lamp.intensity=12;lamp.range=10;
- const moon=new PointLight('window-spill',new Vector3(-3.8,1.8,-.3),scene);moon.diffuse=new Color3(.34,.51,.68);moon.intensity=2.6;moon.range=8;
+ const moon=new PointLight('window-spill',new Vector3(-3.8,1.8,-.3),scene);moon.diffuse=new Color3(.34,.51,.68);moon.intensity=4.2;moon.range=8;
  const shadows=new ShadowGenerator(512,lamp);shadows.usePercentageCloserFiltering=true;shadows.bias=.003;shadows.normalBias=.025;
  function box(name,x,y,z,w,h,d,mat,collide=false,action=null){
   const mesh=MeshBuilder.CreateBox(name,{width:w,height:h,depth:d},scene);mesh.position.set(x,y,z);mesh.material=mat;mesh.receiveShadows=true;
@@ -154,30 +155,33 @@ export function createWorld(canvas,quality='medium'){
   for(let i=0;i<6;i++)box('vent-slat',2.325,.51+i*.055,z,.025,.018,.62,m.black);
   const paper=box('discarded-paper',-.9,.015,z+1.1,.34,.01,.48,m.paper);paper.rotation.y=z;
  }
+ polishWorld(scene,m,shadows);
  const verity=createVerity(scene);shadows.addShadowCaster(verity.ball);
- let boxTime=-1,doorTime=-1,powered=false;
+ let boxTime=-1,doorTime=-1,powered=false,disturbanceUntil=-1;
+ const lamps=[lamp,moon,...hallLights,warm,cold];let lightCheck=-1;
  function qualitySetting(value){
   const mobile=innerWidth<800;
-  engine.setHardwareScalingLevel(value==='low'?Math.max(1.5,devicePixelRatio):value==='high'?1/Math.min(devicePixelRatio,1.5):mobile?1.25:1);
+  engine.setHardwareScalingLevel(value==='low'?1.5:value==='high'?1/Math.min(devicePixelRatio,1.5):mobile?1.25:1);
   shadows.getShadowMap().resize(value==='high'?1024:512);lamp.shadowEnabled=value!=='low';
   scene.shadowsEnabled=value!=='low';
  }
  qualitySetting(quality);
  return {engine,scene,camera,obstacles,verity,targets,m,qualitySetting,
- reset(){camera.position.set(0,1.65,-3.3);camera.rotation.set(.13,0,0);boxTime=doorTime=-1;lidPivot.rotation.x=doorPivot.rotation.y=0;doorCollider.disabled=false;Object.assign(doorCollider,{x:0,z:4.5,w:1.8,d:.2});fuse.setEnabled(false);switchMesh.rotation.x=0;switchMesh.material=m.red;drawer.position.x=2.65;handle.position.x=2.55;powered=false;lamp.intensity=1.8;verity.root.setEnabled(false);},
+ disturb(time){disturbanceUntil=time+1.1;},
+ reset(){disturbanceUntil=-1;lightCheck=-1;verity.reset();camera.position.set(0,1.65,-3.3);camera.rotation.set(.13,0,0);boxTime=doorTime=-1;lidPivot.rotation.x=doorPivot.rotation.y=0;doorCollider.disabled=false;Object.assign(doorCollider,{x:0,z:4.5,w:1.8,d:.2});fuse.setEnabled(false);switchMesh.rotation.x=0;switchMesh.material=m.red;drawer.position.x=2.65;handle.position.x=2.55;powered=false;lamp.intensity=1.8;verity.root.setEnabled(false);},
  effect(type,time){if(type==='box'){boxTime=time;verity.root.setEnabled(true);verity.root.position.set(0,.5,.4);}if(type==='install')fuse.setEnabled(true);if(type==='power'){powered=true;switchMesh.rotation.x=-.6;switchMesh.material=m.brass;}if(type==='door')doorTime=time;if(type==='drawer'){drawer.position.x-=.15;handle.position.x-=.15;}},
  update(time,dt,flicker=true){
-  if(boxTime>=0){lidPivot.rotation.x=Math.min(1,(time-boxTime)/1.1)*1.85;const emerge=Math.min(1,(time-boxTime)/1.2);verity.root.scaling.setAll(.25+.75*emerge);}
+  if(boxTime>=0){const t=Math.max(0,Math.min(1,(time-boxTime)/1.3));lidPivot.rotation.x=(1-Math.pow(1-t,3))*1.85+Math.sin(t*Math.PI)*.08;}
   if(doorTime>=0){doorPivot.rotation.y=Math.min(1,(time-doorTime)/1.2)*-1.65;if(time-doorTime>1.2){doorCollider.x=-.93;doorCollider.z=5.35;doorCollider.w=.18;doorCollider.d=1.72;}}
   lamp.intensity+=( (powered?12:1.8)-lamp.intensity)*Math.min(1,dt*3);
-  hallLights.forEach((l,i)=>{l.intensity=5.5*(flicker?1-.08*Math.sin(time*7+i)*Math.sin(time*3.7+i):1);});
+  hallLights.forEach((l,i)=>{l.intensity=5.5*(flicker?1-.035*Math.sin(time*7+i)*Math.sin(time*3.7+i):1);if(flicker&&time<disturbanceUntil&&i===2)l.intensity*=.18;});
   const p=camera.position;
-  const lamps=[lamp,moon,...hallLights,warm,cold];
+  if(time-lightCheck>.3||lightCheck<0){lightCheck=time;
   const nearby=[...lamps].sort((a,b)=>Vector3.DistanceSquared(a.position,p)-Vector3.DistanceSquared(b.position,p)).slice(0,3);
-  lamps.forEach(light=>light.setEnabled(nearby.includes(light)));
+  lamps.forEach(light=>light.setEnabled(nearby.includes(light)));}
   // Follow along the traversable centre of the corridor, never through its side walls.
   const target=p.z<4.5?new Vector3(.95,1.42,Math.max(.7,Math.min(3.1,p.z+1.7))):new Vector3(Math.max(-1.2,Math.min(1.2,p.x+.8)),1.6,Math.min(30.5,p.z+2.6));
-  verity.update(time,camera,target,time-boxTime<1.8,dt);
+  verity.update(time,camera,target,time-boxTime,dt,flicker);
  },
  dispose(){scene.dispose();engine.dispose();},
  };

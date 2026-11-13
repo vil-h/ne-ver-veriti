@@ -1,10 +1,10 @@
 const voice=(id,text,emotion='friendly')=>({speaker:'Верити',text,emotion,voice:`audio/voice/${id}.ogg`});
 const thought=text=>({speaker:'Вы',text,emotion:'neutral'});
 export const lines={
- wake:thought('Моя комната… Только тишина какая-то чужая. И откуда эта коробка?'),
+ wake:thought('Моя комната… Только тишина какая-то чужая.'),
  box:voice('01-hello','Привет! Я Верити. Не бойся, я помогу тебе выбраться. В ящике стола должен быть предохранитель.'),
  boxAgain:voice('02-box','Спасибо, что выпустил меня. Теперь давай включим свет.'),
- drawerLocked:thought('Старая мелочь. Эта коробка на полу… Сначала стоит заглянуть в неё.'),
+ drawerLocked:thought('Ящик заедает. На столе осталась записка: «Запасной предохранитель».'),
  fuse:voice('03-fuse','Вот он! Поставь его в щиток рядом с дверью. Потом подними выключатель.'),
  fuseAgain:thought('Предохранитель уже у меня.'),
  panelEmpty:thought('Пустое гнездо. Не хватает предохранителя.'),

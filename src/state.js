@@ -17,7 +17,7 @@ export function act(state,action){
 export function objective(s){
  if(s.zone==='doors')return 'Выберите одну из двух дверей';
  if(s.doorOpen)return 'Исследуйте коридор. Найдите выход';
- if(!s.opened)return 'Осмотрите коробку на полу';
+ if(!s.opened)return 'Осмотритесь';
  if(!s.fuse)return 'Найдите предохранитель в ящике стола';
  if(!s.installed)return 'Вставьте предохранитель в щиток у двери';
  if(!s.power)return 'Поднимите выключатель в щитке';
