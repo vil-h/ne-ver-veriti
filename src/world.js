@@ -13,6 +13,7 @@ import {HemisphericLight} from '@babylonjs/core/Lights/hemisphericLight.js';
 import {ShadowGenerator} from '@babylonjs/core/Lights/Shadows/shadowGenerator.js';
 import {DynamicTexture} from '@babylonjs/core/Materials/Textures/dynamicTexture.js';
 import {StandardMaterial} from '@babylonjs/core/Materials/standardMaterial.js';
+import {createCakeRoom} from './cake-room.js';
 import {polishWorld} from './polish.js';
 import {materials} from './materials.js';
 import {createVerity} from './verity.js';
@@ -166,11 +167,15 @@ export function createWorld(canvas,quality='medium'){
   scene.shadowsEnabled=value!=='low';
  }
  qualitySetting(quality);
- return {engine,scene,camera,obstacles,verity,targets,m,qualitySetting,
+ const introMeshes=scene.meshes.filter(mesh=>!mesh.isDescendantOf(verity.root));
+ const cakeRoom=createCakeRoom(scene,m);let inCake=false;
+ return {engine,scene,camera,get obstacles(){return inCake?cakeRoom.obstacles:obstacles;},verity,targets,m,qualitySetting,
+ cakeRoom,enterCake(){inCake=true;introMeshes.forEach(mesh=>mesh.setEnabled(false));lamps.forEach(l=>l.setEnabled(false));scene.fogDensity=.009;ambient.intensity=.5;cakeRoom.enter(camera,verity);},
  disturb(time){disturbanceUntil=time+1.1;},
- reset(){disturbanceUntil=-1;lightCheck=-1;verity.reset();camera.position.set(0,1.65,-3.3);camera.rotation.set(.13,0,0);boxTime=doorTime=-1;lidPivot.rotation.x=doorPivot.rotation.y=0;doorCollider.disabled=false;Object.assign(doorCollider,{x:0,z:4.5,w:1.8,d:.2});fuse.setEnabled(false);switchMesh.rotation.x=0;switchMesh.material=m.red;drawer.position.x=2.65;handle.position.x=2.55;powered=false;lamp.intensity=1.8;verity.root.setEnabled(false);},
- effect(type,time){if(type==='box'){boxTime=time;verity.root.setEnabled(true);verity.root.position.set(0,.5,.4);}if(type==='install')fuse.setEnabled(true);if(type==='power'){powered=true;switchMesh.rotation.x=-.6;switchMesh.material=m.brass;}if(type==='door')doorTime=time;if(type==='drawer'){drawer.position.x-=.15;handle.position.x-=.15;}},
+ reset(){inCake=false;cakeRoom.enable(false);introMeshes.forEach(mesh=>mesh.setEnabled(true));scene.fogDensity=.022;ambient.intensity=.24;disturbanceUntil=-1;lightCheck=-1;verity.reset();camera.position.set(0,1.65,-3.3);camera.rotation.set(.13,0,0);boxTime=doorTime=-1;lidPivot.rotation.x=doorPivot.rotation.y=0;doorCollider.disabled=false;Object.assign(doorCollider,{x:0,z:4.5,w:1.8,d:.2});fuse.setEnabled(false);switchMesh.rotation.x=0;switchMesh.material=m.red;drawer.position.x=2.65;handle.position.x=2.55;powered=false;lamp.intensity=1.8;verity.root.setEnabled(false);},
+ effect(type,time){if(inCake){cakeRoom.effect(type,time);return;}if(type==='box'){boxTime=time;verity.root.setEnabled(true);verity.root.position.set(0,.5,.4);}if(type==='install')fuse.setEnabled(true);if(type==='power'){powered=true;switchMesh.rotation.x=-.6;switchMesh.material=m.brass;}if(type==='door')doorTime=time;if(type==='drawer'){drawer.position.x-=.15;handle.position.x-=.15;}},
  update(time,dt,flicker=true){
+  if(inCake)return cakeRoom.update(time,dt,camera,verity,flicker);
   if(boxTime>=0){const t=Math.max(0,Math.min(1,(time-boxTime)/1.3));lidPivot.rotation.x=(1-Math.pow(1-t,3))*1.85+Math.sin(t*Math.PI)*.08;}
   if(doorTime>=0){doorPivot.rotation.y=Math.min(1,(time-doorTime)/1.2)*-1.65;if(time-doorTime>1.2){doorCollider.x=-.93;doorCollider.z=5.35;doorCollider.w=.18;doorCollider.d=1.72;}}
   lamp.intensity+=( (powered?12:1.8)-lamp.intensity)*Math.min(1,dt*3);

@@ -1,4 +1,5 @@
 import './style.css';
+import {symbols,cakeProximity} from './cake-state.js';
 import {Atmosphere} from './atmosphere.js';
 const atmosphere=new Atmosphere();
 import {createWorld} from './world.js';
@@ -15,7 +16,7 @@ for(const k of ['ambience','effects','voice'])settings[k]=Math.max(0,Math.min(1,
 settings.sensitivity=Math.max(.25,Math.min(2.5,Number(settings.sensitivity)||1));
 let state=initialState(),mode='menu',paused=true,time=0,last=performance.now(),stepTime=0,target=null,lastInteract=-1,shownZones=new Set(),world,input,dialogue;
 const sound=new Sound();
-app.innerHTML=`<canvas id="game-canvas" tabindex="0" aria-label="Трёхмерная спальня. WASD — движение, мышь или стрелки — обзор, E — взаимодействие."></canvas><div class="vignette" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div><div id="hud" hidden><header class="hud-top"><div><p class="eyebrow" id="chapter">01 / ПРОБУЖДЕНИЕ</p><p class="objective" id="objective"></p></div><button id="pause-button" class="small-button" aria-label="Пауза">Ⅱ <span>Пауза</span></button></header><div id="reticle" aria-hidden="true"></div><div id="interaction"><span id="target-label"></span><button id="interact-button" aria-label="Взаимодействовать"><kbd>E</kbd><span id="action-label">Осмотреть</span></button></div><section id="subtitle" aria-live="polite" hidden><p id="speaker"></p><p id="speech"></p></section><div id="controls-note">WASD — идти <span>·</span> Мышь — обзор <span>·</span> E — действие</div><div id="touch-controls"><div id="joystick" role="group" aria-label="Джойстик перемещения"><div id="joystick-knob"></div></div><div class="swipe-hint">Обзор — свайп<br>по свободной части экрана</div></div></div><div id="screen"></div><div id="loading"><span class="loading-ring"></span><p>Комната вспоминает вас…</p></div>`;
+app.innerHTML=`<canvas id="game-canvas" tabindex="0" aria-label="Трёхмерная игра. WASD — движение, мышь или стрелки — обзор, E — взаимодействие."></canvas><div class="vignette" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div><div id="hud" hidden><header class="hud-top"><div><p class="eyebrow" id="chapter">01 / ПРОБУЖДЕНИЕ</p><p class="objective" id="objective"></p></div><button id="pause-button" class="small-button" aria-label="Пауза">Ⅱ <span>Пауза</span></button></header><div id="reticle" aria-hidden="true"></div><div id="interaction"><span id="target-label"></span><button id="interact-button" aria-label="Взаимодействовать"><kbd>E</kbd><span id="action-label">Осмотреть</span></button></div><section id="subtitle" aria-live="polite" hidden><p id="speaker"></p><p id="speech"></p></section><div id="controls-note">WASD — идти <span>·</span> Мышь — обзор <span>·</span> E — действие</div><div id="touch-controls"><div id="joystick" role="group" aria-label="Джойстик перемещения"><div id="joystick-knob"></div></div><div class="swipe-hint">Обзор — свайп<br>по свободной части экрана</div></div></div><div id="screen"></div><div id="loading"><span class="loading-ring"></span><p>Комната вспоминает вас…</p></div>`;
 const $=s=>document.querySelector(s),canvas=$('#game-canvas'),screen=$('#screen');
 let renderedFrames=0,diagnosticError='';
 if(new URLSearchParams(location.search).has('diagnostics')){
@@ -34,7 +35,7 @@ function showSubtitle(data,hasAudio){
 function setPaused(value){paused=value;input?.setActive(!value&&mode==='game');sound.pause(value);if(value)last=performance.now();}
 function menu(){
  mode='menu';setPaused(true);dialogue?.stop();$('#hud').hidden=true;
- screen.innerHTML=`<main class="menu"><header><span class="eyebrow">ИСТОРИЯ О ДОВЕРИИ</span><span class="build">0.3 / ПЕРВЫЙ ЭПИЗОД</span></header><div class="menu-copy"><p class="eyebrow">ОДИН ДРУГ. ДВЕ ДВЕРИ.</p><h1>НЕ ВЕРЬ<br><em>ВЕРИТИ!</em></h1><p class="tagline">Он знает выход.<br>По крайней мере, так он говорит.</p><button class="primary" data-ui="start">Начать игру <span>↗</span></button><button class="secondary" data-ui="settings">Настройки</button><p class="warning">△ Тревожная атмосфера, изменения света и звуки.<br>Выберите комфортную громкость.</p></div><footer><span>ОТ ПЕРВОГО ЛИЦА</span><span>МЫШЬ И КЛАВИАТУРА / КАСАНИЕ</span></footer></main>`;
+ screen.innerHTML=`<main class="menu"><header><span class="eyebrow">ИСТОРИЯ О ДОВЕРИИ</span><span class="build">0.4 / КОМНАТА С ТОРТОМ</span></header><div class="menu-copy"><p class="eyebrow">ОДИН ДРУГ. ДВЕ ДВЕРИ.</p><h1>НЕ ВЕРЬ<br><em>ВЕРИТИ!</em></h1><p class="tagline">Он знает выход.<br>По крайней мере, так он говорит.</p><button class="primary" data-ui="start">Начать игру <span>↗</span></button><button class="secondary" data-ui="settings">Настройки</button><p class="warning">△ Тревожная атмосфера, изменения света и звуки.<br>Выберите комфортную громкость.</p></div><footer><span>ОТ ПЕРВОГО ЛИЦА</span><span>МЫШЬ И КЛАВИАТУРА / КАСАНИЕ</span></footer></main>`;
  screen.hidden=false;document.body.classList.add('in-menu');
 }
 async function start(){
@@ -48,16 +49,31 @@ function settingsScreen(){
  screen.hidden=false;screen.innerHTML=`<div class="modal-wrap"><section class="modal settings" role="dialog" aria-modal="true" aria-labelledby="settings-title"><p class="eyebrow">КОМФОРТ И УПРАВЛЕНИЕ</p><h2 id="settings-title">Настройки</h2><div class="settings-grid"><div>${check('master','Звук')}${range('ambience','Окружение')}${range('effects','Эффекты')}${range('voice','Голос Верити')}<p class="recording-note">${Object.keys(dialogue.manifest.files||{}).length?'Подключены локальные записи голоса.':'Записи голоса пока не добавлены. Реплики доступны в субтитрах.'}</p></div><div>${range('sensitivity','Чувствительность мыши',.25,2.5)}${check('subtitles','Субтитры')}${check('motion','Покачивание и мерцание')}${check('mobile','Сенсорное управление')}<label class="quality-label" for="quality">Качество графики</label><select id="quality" data-setting="quality"><option value="low" ${settings.quality==='low'?'selected':''}>Низкое — для телефона</option><option value="medium" ${settings.quality==='medium'?'selected':''}>Среднее</option><option value="high" ${settings.quality==='high'?'selected':''}>Высокое</option></select></div></div><button class="primary" data-ui="settings-close">Готово <span>↗</span></button></section></div>`;screen.querySelector('input').focus();
 }
 function updateHud(){
- $('#objective').textContent=objective(state);$('#chapter').textContent=state.zone==='bedroom'?'01 / ПРОБУЖДЕНИЕ':state.zone==='doors'?'02 / ДВЕ ДВЕРИ':'02 / КОРИДОР';
+ $('#objective').textContent=objective(state);$('#chapter').textContent=state.zone==='cakeRoom'?'03 / ПРАЗДНИК':state.zone==='bedroom'?'01 / ПРОБУЖДЕНИЕ':state.zone==='doors'?'02 / ДВЕ ДВЕРИ':'02 / КОРИДОР';
 }
-const targetNames={box:'Необычная коробка',drawer:'Ящик письменного стола',panel:'Электрический щиток',exit:'Дверь спальни',cake:'Красивая дверь',rescue:'Дверь «Спасение»',bed:'Кровать',window:'Окно',wardrobe:'Шкаф'};
-function targetText(action){if(action==='box')return state.opened?'Осмотреть':'Открыть';if(action==='drawer')return 'Открыть ящик';if(action==='panel')return !state.fuse?'Осмотреть':!state.installed?'Вставить предохранитель':!state.power?'Включить свет':'Осмотреть';if(action==='exit'||action==='cake'||action==='rescue')return 'Открыть дверь';return 'Осмотреть';}
+const targetNames={treat:'Торт',partyNote:'Праздничная карточка',candleClue:'Подставка свечей',giftClue:'Подарок',starClue:'Звезда',cakeEntry:'Входная дверь',codeLock:'Символьный замок',redButton:'Красная кнопка',cakeExit:'Дверь с замком',box:'Необычная коробка',drawer:'Ящик письменного стола',panel:'Электрический щиток',exit:'Дверь спальни',cake:'Красивая дверь',rescue:'Дверь «Спасение»',bed:'Кровать',window:'Окно',wardrobe:'Шкаф'};
+function targetText(action){if(action==='cakeExit')return state.cake.unlocked?'Пройти':'Осмотреть';if(action==='codeLock')return 'Ввести знаки';if(action==='redButton')return 'Нажать';if(action==='box')return state.opened?'Осмотреть':'Открыть';if(action==='drawer')return 'Открыть ящик';if(action==='panel')return !state.fuse?'Осмотреть':!state.installed?'Вставить предохранитель':!state.power?'Включить свет':'Осмотреть';if(action==='exit'||action==='cake'||action==='rescue')return 'Открыть дверь';return 'Осмотреть';}
 function interact(){
  if(paused||mode!=='game'||!target||time-lastInteract<.4)return;lastInteract=time;
- const result=act(state,target);state=result.state;if(result.effect){world.effect(result.effect,time);sound.effect(result.effect);}else sound.effect('click');
+ if(target==='codeLock'){if(!state.cake.collapsed){setPaused(true);lockScreen();}return;}
+ const result=act(state,target);applyResult(result);
  if(result.line)dialogue.say(result.line);updateHud();
- if(state.branch){const end=endings[state.branch];dialogue.stop();setPaused(true);mode='ending';$('#hud').hidden=true;screen.hidden=false;screen.innerHTML=`<div class="ending-wrap"><main class="ending"><p class="eyebrow">ВЫБОР СДЕЛАН / ${state.branch==='cake'?'А':'Б'}</p><div class="ending-symbol">${state.branch==='cake'?'✧':'⌁'}</div><h1>${end.title}</h1><p class="development">В разработке</p><p>${end.text}</p><p class="muted">Это точка продолжения первого эпизода,<br>а не сюжетная концовка.</p><button class="primary" data-ui="menu">Вернуться в меню <span>↗</span></button></main></div>`;}
+ if(state.branch==='rescue')finish('Ветка «Спасение»','Вы выбрали железную дверь. Эта ветка будет реализована отдельно.');
 }
+function applyResult(result){
+ state=result.state;
+ if(result.effect==='enterCake'){world.enterCake();atmosphere.reset();atmosphere.next=time+15;target=null;input.clear();}
+ else if(result.effect==='next'){finish('Следующий эпизод','Вы доверились Верити и открыли дверь. Продолжение сюжета ещё не утверждено.');return;}
+ else if(result.effect){world.effect(result.effect,time);sound.effect(result.effect);if(result.effect==='collapse')sound.alarm();}
+}
+function finish(title,text){
+ dialogue.stop();setPaused(true);mode='ending';$('#hud').hidden=true;screen.hidden=false;
+ screen.innerHTML=`<div class="ending-wrap"><main class="ending"><p class="eyebrow">ТОЧКА ПРОДОЛЖЕНИЯ</p><h1>${title}</h1><p>${text}</p><p class="muted">Это не сюжетная концовка. Следующий этап в разработке.</p><button class="primary" data-ui="restart">Начать заново</button><button class="secondary" data-ui="menu">В главное меню</button></main></div>`;
+}
+function lockScreen(message=''){
+ screen.hidden=false;screen.innerHTML=`<div class="modal-wrap"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="lock-title"><p class="eyebrow">ЗАМОК НА ДВЕРИ</p><h2 id="lock-title">Три знака</h2><p class="muted">Нажимайте на ячейки, чтобы сменить знак.</p><div class="symbol-slots">${state.cake.digits.map((n,i)=>`<button data-dial="${i}" aria-label="Знак ${i+1}: ${symbols[n]}"><span>${['◆','☾','★'][n]}</span>${symbols[n]}</button>`).join('')}</div><p role="status">${message}</p><button class="primary" data-ui="code-submit">Проверить</button><button class="secondary" data-ui="code-close">Вернуться в комнату</button></section></div>`;screen.querySelector('button').focus();
+}
+
 function frame(){
  renderedFrames++;
  const now=performance.now(),dt=Math.min(.045,(now-last)/1000);last=now;
@@ -69,12 +85,17 @@ function frame(){
   const p=movePlayer(camera.position,dx,dz,world.obstacles);const moved=Math.hypot(p.x-camera.position.x,p.z-camera.position.z);camera.position.x=p.x;camera.position.z=p.z;
   const bob=settings.motion&&moved>.001?Math.sin(time*11)*.012:0;camera.position.y=1.65+bob;
   if(moved>.001){stepTime+=dt;if(stepTime>.48){sound.effect('step',camera.position.z>5?'carpet':'wood');stepTime=0;}}
-  const zone=camera.position.z>26?'doors':camera.position.z>5?'corridor':'bedroom';
+  const zone=state.zone==='cakeRoom'?'cakeRoom':camera.position.z>26?'doors':camera.position.z>5?'corridor':'bedroom';
   if(zone!==state.zone){state.zone=zone;updateHud();if(zone!=='bedroom'&&!shownZones.has(zone)){shownZones.add(zone);dialogue.say(zone==='doors'?'doors':'corridor');}}
-  if(camera.position.z>17&&!shownZones.has('middle')){shownZones.add('middle');dialogue.say('middle');}
+  if(zone!=='cakeRoom'&&camera.position.z>17&&!shownZones.has('middle')){shownZones.add('middle');dialogue.say('middle');}
   sound.setListener(camera.position,camera.rotation.y);
-  const ambientEvent=atmosphere.update(time,zone);if(ambientEvent){sound.ambientEvent(ambientEvent.kind,ambientEvent.position);if(zone!=='bedroom')world.disturb(time);}
-  world.update(time,dt,settings.motion);dialogue.tick(dt);
+  const ambientEvent=atmosphere.update(time,zone);if(ambientEvent){sound.ambientEvent(ambientEvent.kind,zone==='cakeRoom'?[15.7,1.5,1]:ambientEvent.position);if(zone!=='bedroom'&&zone!=='cakeRoom')world.disturb(time);}
+  if(zone==='cakeRoom'){
+   const distance=Math.hypot(camera.position.x-17,camera.position.z-4.12);const reaction=cakeProximity(state.cake,distance,dt);state.cake=reaction.state;
+   if(reaction.line)dialogue.say(reaction.line);
+  }
+  const transformed=world.update(time,dt,settings.motion);dialogue.tick(dt);
+  if(transformed){finish('Начало погони','Декорации разрушены. Верити больше не скрывает ярость. Саму погоню предстоит реализовать в следующей версии.');return;}
   const hit=world.scene.pickWithRay(camera.getForwardRay(2.55),mesh=>mesh.isPickable&&mesh.isEnabled());
   target=hit?.hit?hit.pickedMesh.metadata?.action:null;
   $('#interaction').hidden=!target;$('#reticle').classList.toggle('active',!!target);
@@ -83,7 +104,16 @@ function frame(){
  world.scene.render();
 }
 app.addEventListener('click',e=>{
+ const dial=e.target.closest('[data-dial]')?.dataset.dial;
+ if(dial!==undefined){state=act(state,'dial'+dial).state;sound.effect('click');lockScreen();return;}
  const action=e.target.closest('[data-ui]')?.dataset.ui;if(!action)return;
+ if(action==='code-close'){screen.hidden=true;setPaused(false);canvas.focus();}
+ if(action==='code-submit'){
+  const result=act(state,'submit');applyResult(result);updateHud();
+  if(state.cake.unlocked){screen.hidden=true;setPaused(false);canvas.focus();dialogue.say(result.line);}
+  else lockScreen('Неверная последовательность. Попробуйте ещё раз.');
+ }
+
  if(action==='start'||action==='restart')start();if(action==='menu')menu();if(action==='settings')settingsScreen();
  if(action==='resume'){screen.hidden=true;setPaused(false);canvas.focus();}
  if(action==='settings-close'){if(mode==='menu')menu();else pauseScreen();}
@@ -97,6 +127,7 @@ app.addEventListener('input',e=>{
 $('#pause-button').addEventListener('click',pause);$('#interact-button').addEventListener('click',interact);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
 document.addEventListener('keydown',e=>{
+ if(e.code==='Escape'&&screen.querySelector('[data-ui="code-close"]')){screen.hidden=true;setPaused(false);canvas.focus();return;}
  if(e.code==='Escape'&&paused&&mode==='game'&&screen.querySelector('[data-ui="resume"]'))return;
  if(e.key==='Tab'&&!screen.hidden){const focus=[...screen.querySelectorAll('button,input,select')],first=focus[0],last=focus.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
 });

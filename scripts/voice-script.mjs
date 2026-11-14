@@ -1,10 +1,10 @@
 import {writeFileSync} from 'node:fs';
 import {lines} from '../src/story.js';
 const rows=Object.entries(lines).map(([id,line])=>({id,speaker:line.speaker,text:line.text,emotion:line.emotion,file:line.voice?.replace('.ogg','.mp3')||null}));
-writeFileSync('public/audio/voice/recording-script.json',JSON.stringify({version:'0.3',status:'recordings-required',lines:rows},null,2)+'\n');
-const text=`# Пакет записи первого эпизода, версия 0.3
+writeFileSync('public/audio/voice/recording-script.json',JSON.stringify({version:'0.4',status:'recordings-required',lines:rows},null,2)+'\n');
+const text=`# Пакет записи первого эпизода, версия 0.4
 
-Готовых MP3 нет. Семь обязательных реплик Верити перечислены ниже; текст совпадает с src/story.js. Мысли героя остаются субтитрами и приведены отдельно для полноты сценария.
+Готовых MP3 нет. Четырнадцать обязательных реплик Верити перечислены ниже; текст совпадает с src/story.js. Мысли героя остаются субтитрами и приведены отдельно для полноты сценария.
 
 Голос: русский, дружелюбный, мультяшный, немного странный; самостоятельная актёрская трактовка без имитации оригинального актёра. Первые пять реплик — искренняя помощь. В коридоре тише, с осторожной паузой после «немного»; у дверей мягкая настойчивость, без злости и рычания.
 
@@ -12,7 +12,7 @@ const text=`# Пакет записи первого эпизода, верси�
 
 | Файл в public/ | Эмоция | Точный текст |
 | --- | --- | --- |
-${rows.filter(r=>r.file).map(r=>`| ${r.file} | ${r.emotion==='friendly'?'Дружелюбная':'Подозрительная'} | ${r.text} |`).join('\n')}
+${rows.filter(r=>r.file).map(r=>`| ${r.file} | ${({friendly:'Дружелюбная',suspicious:'Подозрительная',angry:'Злая'})[r.emotion]} | ${r.text} |`).join('\n')}
 
 ## Мысли героя — без обязательной голосовой записи
 
@@ -20,7 +20,7 @@ ${rows.filter(r=>!r.file).map(r=>`- **${r.id}**: ${r.text}`).join('\n')}
 
 ## Подключение
 
-Добавить семь MP3 в public/audio/voice и сопоставить ключи .ogg из src/story.js с путями .mp3 в manifest.json (образец в README.md). После этого выполнить npm test и npm run build. При отсутствии или ошибке файла остаются субтитры. Рот получает амплитуду реальной записи, а без неё сохраняет эмоциональную улыбку. Злой образец не входит в первый эпизод и не требуется к записи.
+Добавить четырнадцать MP3 в public/audio/voice и сопоставить ключи .ogg из src/story.js с путями .mp3 в manifest.json (образец в README.md). После этого выполнить npm test и npm run build. При отсутствии или ошибке файла остаются субтитры. Рот получает амплитуду реальной записи, а без неё сохраняет эмоциональную улыбку. Реплики 08–14 относятся к комнате с тортом: радость, помощь, тревога, настойчивость, возвращение к спокойствию и ярость после кнопки. Ярость резкая, без клиппинга и без имитации чужого голоса.
 
 Этот документ и recording-script.json обновляются командой node scripts/voice-script.mjs.
 `;

@@ -13,21 +13,22 @@ export function createVerity(scene){
  const face=MeshBuilder.CreateRibbon('verity-face',{pathArray:paths,sideOrientation:2},scene);face.parent=root;face.isPickable=false;
  const tex=new DynamicTexture('verity-expression',{width:512,height:512},scene,false);tex.hasAlpha=true;
  const mat=new StandardMaterial('expression-ink',scene);mat.diffuseTexture=tex;mat.useAlphaFromDiffuseTexture=true;mat.specularColor=Color3.Black();mat.backFaceCulling=false;face.material=mat;
- let emotion='friendly',talking=false,lastMouth=-1,lastBlink=-1,amplitude=0;
+ let emotion='friendly',talking=false,lastMouth=-1,lastBlink=-1,amplitude=0,transformation=0;
  function draw(mouth=0,blink=0){
   const c=tex.getContext();c.clearRect(0,0,512,512);c.fillStyle='#17150f';c.strokeStyle='#17150f';c.lineCap='round';
   for(const x of [158,354]){c.beginPath();c.ellipse(x,219,22,Math.max(3,(emotion==='suspicious'?31:45)*(1-blink)),emotion==='angry'?(x<200?-.3:.3):0,0,Math.PI*2);c.fill();}
-  c.lineWidth=17;c.beginPath();c.moveTo(160,328);c.bezierCurveTo(215,emotion==='angry'?360:405+mouth*14,304,emotion==='angry'?360:405+mouth*14,357,322);c.stroke();
+  c.lineWidth=17;c.beginPath();c.moveTo(160,328);c.bezierCurveTo(215,emotion==='angry'?280:405+mouth*14,304,emotion==='angry'?280:405+mouth*14,357,322);c.stroke();
   if(mouth>.1){c.beginPath();c.ellipse(260,366,37,5+mouth*30,0,0,Math.PI*2);c.fill();}
   if(emotion!=='friendly'){c.lineWidth=13;for(const x of [158,354]){c.beginPath();c.moveTo(x-29,153+(emotion==='angry'&&x>200?20:0));c.lineTo(x+29,153+(emotion==='angry'&&x<200?20:0));c.stroke();}}
   tex.update();
  }
  draw();
  return {root,ball,
- reset(){emotion='friendly';talking=false;amplitude=0;lastMouth=lastBlink=-1;root.scaling.setAll(1);root.rotation.setAll(0);draw();},
+ reset(){transformation=0;gold.diffuseColor=Color3.FromHexString('#edb331');emotion='friendly';talking=false;amplitude=0;lastMouth=lastBlink=-1;root.scaling.setAll(1);root.rotation.setAll(0);draw();},
  setEmotion(value){emotion=value==='neutral'?'friendly':value;draw();},
  setTalking(value){talking=value;if(!value){amplitude=0;draw();}},
  setAmplitude(value){amplitude=value;},
+ setTransformation(value){transformation=value;emotion='angry';gold.diffuseColor=Color3.Lerp(Color3.FromHexString('#edb331'),Color3.FromHexString('#c44c0d'),value);draw();},
  update(t,camera,origin,age,dt,motion=true){
   if(!root.isEnabled())return;
   if(age<2.2){
@@ -38,6 +39,7 @@ export function createVerity(scene){
   const yaw=Math.atan2(camera.position.x-root.position.x,camera.position.z-root.position.z)+Math.PI;
   const delta=Math.atan2(Math.sin(yaw-root.rotation.y),Math.cos(yaw-root.rotation.y));root.rotation.y+=delta*(1-Math.exp(-dt*5));
   root.rotation.z=motion?Math.sin(t*1.1)*.025+(emotion==='suspicious'?.065:0):0;
+  if(transformation>0){root.scaling.set(1+transformation*.28,1+transformation*.5,1+transformation*.2);root.rotation.z+=motion?Math.sin(t*13)*.015*transformation:0;}
   const phase=t%4.7,blink=phase<.15?Math.sin(phase/.15*Math.PI):0;
   const mouth=talking?Math.round(Math.min(1,amplitude*5)*8)/8:0;
   const blinkFrame=Math.round(blink*4)/4;
