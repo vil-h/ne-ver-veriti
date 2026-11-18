@@ -3,3 +3,5 @@
 @media(max-height:550px) and (orientation:landscape){.menu-copy{padding:15px 3vw}.menu h1{font-size:60px;margin:12px 0}.tagline{font-size:13px;margin:15px 0}.menu-copy>.eyebrow,.menu footer,.warning{display:none}.menu .primary,.menu .secondary{display:inline-flex;min-width:170px;margin:10px 10px 0 0}.hud-top{padding:12px 20px}.touch #subtitle{bottom:20px;max-width:52%;left:50%}#speech{font-size:13px}.touch #interaction{top:45%}.swipe-hint{display:none}#joystick{bottom:15px;width:90px;height:90px}.touch #interact-button{min-width:120px}}
 
 .symbol-slots{display:flex;gap:10px;margin:24px 0}.symbol-slots button{flex:1;min-width:0;padding:16px 4px;background:#1d2924;color:#e8d8ae;border:1px solid #a98d54;font-size:12px}.symbol-slots span{display:block;font-size:34px;margin-bottom:8px}
+
+#jump-button{position:fixed;z-index:4;right:24px;bottom:100px;padding:18px 28px;background:#d4b77e;color:#172319;border:1px solid #f7dfac;font-weight:bold}#chase-shade{position:fixed;inset:0;pointer-events:none;z-index:2}#screen{position:relative;z-index:5}.touch #jump-button{right:18px;bottom:110px;max-width:47vw}.touch:has(#jump-button:not([hidden])) .swipe-hint{display:none}

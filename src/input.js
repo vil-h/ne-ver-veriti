@@ -1,8 +1,8 @@
 export class Input {
- constructor(canvas,onInteract,onPause,sensitivity){
+ constructor(canvas,onInteract,onPause,sensitivity,onJump=()=>{}){
   this.canvas=canvas;this.active=false;this.keys=new Set();this.dx=0;this.dy=0;this.stick={x:0,y:0};this.sensitivity=sensitivity;this.drag=null;this.joyId=null;this.lockRequested=false;
   this.handlers=[];const listen=(el,type,fn,opts)=>{el.addEventListener(type,fn,opts);this.handlers.push(()=>el.removeEventListener(type,fn,opts));};
-  listen(document,'keydown',e=>{if(!this.active)return;if(['KeyW','KeyA','KeyS','KeyD','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','KeyE','Escape','Space'].includes(e.code))e.preventDefault();this.keys.add(e.code);if(e.code==='KeyE'&&!e.repeat)onInteract();if(e.code==='Escape')onPause();});
+  listen(document,'keydown',e=>{if(!this.active)return;if(['KeyW','KeyA','KeyS','KeyD','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','KeyE','Escape','Space'].includes(e.code))e.preventDefault();this.keys.add(e.code);if(e.code==='KeyE'&&!e.repeat)onInteract();if(e.code==='Escape')onPause();if(e.code==='Space'&&!e.repeat)onJump();});
   listen(document,'keyup',e=>this.keys.delete(e.code));
   listen(window,'blur',()=>{this.clear();if(this.active)onPause();});
   listen(document,'pointerlockchange',()=>{if(document.pointerLockElement!==canvas&&this.lockRequested&&this.active){this.lockRequested=false;onPause();}});
@@ -29,7 +29,7 @@ export class Input {
   const k=this.keys;let forward=(k.has('KeyW')?1:0)-(k.has('KeyS')?1:0)-this.stick.y,side=(k.has('KeyD')?1:0)-(k.has('KeyA')?1:0)+this.stick.x;const length=Math.hypot(forward,side);if(length>1){forward/=length;side/=length;}
   const yaw=this.dx*.0021*this.sensitivity()+(Number(k.has('ArrowRight'))-Number(k.has('ArrowLeft')))*dt*1.35;
   const pitch=this.dy*.0021*this.sensitivity()+(Number(k.has('ArrowDown'))-Number(k.has('ArrowUp')))*dt;
-  this.dx=this.dy=0;return {forward,side,yaw,pitch};
+  this.dx=this.dy=0;return {forward,side,yaw,pitch,sprint:k.has('ShiftLeft')||k.has('ShiftRight')};
  }
  dispose(){this.handlers.forEach(fn=>fn());this.clear();}
 }

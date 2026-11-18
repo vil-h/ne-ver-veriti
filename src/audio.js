@@ -1,3 +1,4 @@
+import {ChaseAudio} from './chase-audio.js';
 export class Sound {
  constructor(){this.ctx=null;this.paused=true;this.settings={master:true,ambience:.35,effects:.5,voice:.8};this.sources=[];}
  async start(){
@@ -50,6 +51,10 @@ export class Sound {
   const cleanup=this.ctx.createBufferSource();cleanup.buffer=this.noiseBuffer;const silent=this.ctx.createGain();silent.gain.value=0;cleanup.connect(silent);silent.connect(this.master);cleanup.start();cleanup.stop(this.ctx.currentTime+2.2);cleanup.onended=()=>{bus.disconnect();cleanup.disconnect();silent.disconnect();};
  }
  alarm(){if(!this.ctx||this.paused)return;this.noiseBurst(.7,.17,1200,this.effects);const o=this.ctx.createOscillator(),g=this.ctx.createGain(),t=this.ctx.currentTime;o.type='sawtooth';o.frequency.setValueAtTime(180,t);o.frequency.linearRampToValueAtTime(53,t+1.8);g.gain.setValueAtTime(.07,t);g.gain.exponentialRampToValueAtTime(.0001,t+2);o.connect(g);g.connect(this.effects);o.start();o.stop(t+2);o.onended=()=>{o.disconnect();g.disconnect();};}
+ startChase(){this.stopChase();if(this.ctx){this.chaseAudio=new ChaseAudio(this);this.alarm();}}
+ stopChase(){this.chaseAudio?.stop();this.chaseAudio=null;}
+ updateChase(time,p,d){this.chaseAudio?.update(time,p,d);}
+ fall(){if(this.ctx&&!this.paused)this.noiseBurst(2.3,.25,1600,this.effects);}
  voiceLevel(){if(!this.voiceAnalyser)return 0;this.voiceAnalyser.getByteTimeDomainData(this.voiceSamples);let sum=0;for(const v of this.voiceSamples)sum+=((v-128)/128)**2;return Math.sqrt(sum/this.voiceSamples.length);}
  async loadVoice(url){if(!this.ctx)return null;const response=await fetch(url);if(!response.ok)throw new Error(`Нет аудиофайла: ${url}`);return this.ctx.decodeAudioData(await response.arrayBuffer());}
  playVoice(buffer,emotion,onend){

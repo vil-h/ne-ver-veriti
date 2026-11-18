@@ -20,17 +20,17 @@ export function createCakeRoom(scene,m){
  // Structural shell stays collidable while false panels fall outward into the service gap.
  box('shell-back',20,1.7,-4.6,8.8,3.4,.2,dark,null,true);
  for(const x of [15.6,24.4])box('shell-side',x,1.7,0,.2,3.4,9.4,dark,null,true);
- box('shell-front',20,1.7,4.8,8.8,3.4,.2,dark,null,true);
+ const frontShell=box('shell-front',20,1.7,4.8,8.8,3.4,.2,dark,null,true);
  for(const x of [16,24])for(const z of [-3,-1,1,3]){const a=box('false-wall',x,1.6,z,.12,3.2,1.96,ivory);panels.push({mesh:a,x,y:1.6,z,side:x<20?-1:1});}
  for(const x of [17,19,21,23]){const a=box('backdrop',x,1.6,-4.45,1.96,3.2,.1,rose);panels.push({mesh:a,x,y:1.6,z:-4.45,side:0});}
- for(const x of [17,23])box('front-panelling',x,1.6,4.5,2,3.2,.12,ivory);
+ for(const x of [17,23])box('front-panelling',x,1.6,4.5,2,3.2,.12,ivory,null,true);
  box('door-lintel',20,2.95,4.5,4,.5,.12,ivory);
  for(const x of [16.07,23.93])box('party-dado',x,.9,0,.05,.07,8.9,gold);
  for(const x of [15.8,24.2])for(const z of [-3,0,3])box('service-stud',x,1.7,z,.08,3.4,.08,m.metal);
  for(const y of [.4,2.8])box('service-pipe',15.85,y,0,.065,.065,9,m.metal);
  const doorPivot=new TransformNode('cake-door-hinge',scene);doorPivot.parent=root;doorPivot.position.set(19.15,0,4.4);
  const door=box('cake-exit-door',0,0,0,1.7,2.5,.12,m.cream,'cakeExit');door.parent=doorPivot;door.position.set(.85,1.25,0);
- box('exit-threshold',20,1.25,4.65,1.7,2.5,.02,dark,'cakeExit');
+ const threshold=box('exit-threshold',20,1.25,4.65,1.7,2.5,.02,dark,'cakeExit');
  const blocker={name:'cake-exit',x:20,z:4.4,w:1.8,d:.2};obstacles.push(blocker);
  box('party-entry',20,1.25,-4.4,1.6,2.5,.12,m.cream,'cakeEntry');
  // Furniture footprint deliberately leaves a generous route along either side.
@@ -59,7 +59,9 @@ export function createCakeRoom(scene,m){
  const fill=new PointLight('cake-fill',new Vector3(20,2.5,3.5),scene);fill.diffuse=new Color3(1,.69,.51);fill.intensity=.7;fill.range=9;
  box('softbox',20,3.25,0,2,.05,1.2,m.bulb);
  function enable(value){root.setEnabled(value);light.setEnabled(value);fill.setEnabled(value);}
- function reset(){broken=opened=-1;blocker.disabled=false;doorPivot.rotation.y=0;for(const a of panels){a.mesh.position.set(a.x,a.y,a.z);a.mesh.rotation.setAll(0);}for(const d of decor){d.mesh.position.y=d.y;d.mesh.rotation.z=d.rot;}light.diffuse.set(1,.84,.65);light.intensity=1.4;fill.diffuse.set(1,.69,.51);fill.intensity=.7;}
+ const passage=new TransformNode('revealed-passage',scene);passage.parent=root;
+ for(const a of [box('passage-floor',20,-.1,7.5,4,.2,6,m.metal),box('passage-left',18,1.6,7.5,.2,3.2,6,dark,null,true),box('passage-right',22,1.6,7.5,.2,3.2,6,dark,null,true),box('passage-light',20,2.7,9,1,.1,.1,red)])a.parent=passage;
+ function reset(){broken=opened=-1;passage.setEnabled(false);frontShell.setEnabled(true);threshold.setEnabled(true);obstacles.find(o=>o.name==='shell-front').disabled=false;blocker.disabled=false;doorPivot.rotation.y=0;for(const a of panels){a.mesh.position.set(a.x,a.y,a.z);a.mesh.rotation.setAll(0);}for(const d of decor){d.mesh.position.y=d.y;d.mesh.rotation.z=d.rot;}light.diffuse.set(1,.84,.65);light.intensity=1.4;fill.diffuse.set(1,.69,.51);fill.intensity=.7;}
  enable(false);
  return {obstacles,buttonPosition:new Vector3(17,1.3,4.12),enable,reset,
  enter(camera,verity){reset();enable(true);camera.position.set(20,1.65,-3.3);camera.rotation.set(.1,0,0);verity.reset();verity.root.setEnabled(true);verity.root.position.set(21.1,1.6,-1.8);},
@@ -69,12 +71,13 @@ export function createCakeRoom(scene,m){
   if(broken>=0){const age=t-broken;light.diffuse.set(1,.035,.015);fill.diffuse.set(.5,.025,.02);light.intensity=2.2;fill.intensity=.55;
    panels.forEach((a,i)=>{const u=Math.max(0,Math.min(1,(age-.5-i*.07)/2.6));a.mesh.position.y=a.y-u*1.25;if(a.side){a.mesh.position.x=a.x+a.side*u*.24;a.mesh.rotation.z=a.side*u*1.3;}else{a.mesh.position.z=a.z-u*.22;a.mesh.rotation.x=-u*1.2;}});
    decor.forEach((a,i)=>{const u=Math.max(0,age-.3-i*.055);a.mesh.position.y=Math.max(.08,a.y-u*u*1.7);a.mesh.rotation.z=a.rot+Math.min(u,2)*1.5;});
-   verity.setTransformation(Math.min(1,age/5));
+   verity.setTransformation(Math.min(2,age/3.5));
+   if(age>5){passage.setEnabled(true);frontShell.setEnabled(false);threshold.setEnabled(false);obstacles.find(o=>o.name==='shell-front').disabled=true;blocker.disabled=true;doorPivot.rotation.y=-1.5;}
   }
   const p=camera.position;let target=new Vector3(Math.max(16.6,Math.min(23.4,p.x+.95)),1.6,Math.max(-3.5,Math.min(3.5,p.z+1.7)));
   if(Math.abs(target.x-20)<1.5&&Math.abs(target.z)<1.5)target.x=p.x<20?18.4:21.6;
-  if(broken>=0)target=new Vector3(p.x+Math.sin(camera.rotation.y)*1.6,1.75,p.z+Math.cos(camera.rotation.y)*1.6);
+  if(broken>=0)target=t-broken>3?new Vector3(17.4,1.8,2.7):new Vector3(p.x+Math.sin(camera.rotation.y)*1.6,1.75,p.z+Math.cos(camera.rotation.y)*1.6);
   verity.update(t,camera,target,10,dt,motion);
-  return broken>=0&&t-broken>8;
+  return broken>=0&&t-broken>5&&camera.position.z>5&&Math.abs(camera.position.x-20)<1.7;
  }};
 }

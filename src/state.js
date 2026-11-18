@@ -17,7 +17,7 @@ export function act(state,action){
  return {state:s,line,effect};
 }
 export function objective(s){
- if(s.zone==='cakeRoom')return s.cake.collapsed?'Праздник окончен':s.cake.unlocked?'Дверь открыта': 'Осмотрите праздничную комнату';
+ if(s.zone==='cakeRoom')return s.cake.collapsed?'За дверью открылся проход. Бегите!':s.cake.unlocked?'Дверь открыта': 'Осмотрите праздничную комнату';
  if(s.zone==='doors')return 'Выберите одну из двух дверей';
  if(s.doorOpen)return 'Исследуйте коридор. Найдите выход';
  if(!s.opened)return 'Осмотритесь';
