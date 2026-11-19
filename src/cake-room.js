@@ -68,16 +68,16 @@ export function createCakeRoom(scene,m){
  effect(type,t){if(type==='collapse'&&broken<0)broken=t;if(type==='unlock'&&opened<0)opened=t;},
  update(t,dt,camera,verity,motion){
   if(opened>=0){const u=Math.min(1,(t-opened)/1.2);doorPivot.rotation.y=-u*1.5;if(u===1)blocker.disabled=true;}
-  if(broken>=0){const age=t-broken;light.diffuse.set(1,.035,.015);fill.diffuse.set(.5,.025,.02);light.intensity=2.2;fill.intensity=.55;
+  if(broken>=0){const age=t-broken;light.diffuse.set(1,.035,.015);fill.diffuse.set(.5,.025,.02);light.intensity=motion?1.65+.45*Math.sin(age*7):1.8;fill.intensity=.55;
    panels.forEach((a,i)=>{const u=Math.max(0,Math.min(1,(age-.5-i*.07)/2.6));a.mesh.position.y=a.y-u*1.25;if(a.side){a.mesh.position.x=a.x+a.side*u*.24;a.mesh.rotation.z=a.side*u*1.3;}else{a.mesh.position.z=a.z-u*.22;a.mesh.rotation.x=-u*1.2;}});
    decor.forEach((a,i)=>{const u=Math.max(0,age-.3-i*.055);a.mesh.position.y=Math.max(.08,a.y-u*u*1.7);a.mesh.rotation.z=a.rot+Math.min(u,2)*1.5;});
-   verity.setTransformation(Math.min(2,age/3.5));
-   if(age>5){passage.setEnabled(true);frontShell.setEnabled(false);threshold.setEnabled(false);obstacles.find(o=>o.name==='shell-front').disabled=true;blocker.disabled=true;doorPivot.rotation.y=-1.5;}
+   verity.setTransformation(Math.max(0,Math.min(2,(age-1.1)/3.1)));
+   if(age>8){passage.setEnabled(true);frontShell.setEnabled(false);threshold.setEnabled(false);obstacles.find(o=>o.name==='shell-front').disabled=true;blocker.disabled=true;doorPivot.rotation.y=-1.5;}
   }
   const p=camera.position;let target=new Vector3(Math.max(16.6,Math.min(23.4,p.x+.95)),1.6,Math.max(-3.5,Math.min(3.5,p.z+1.7)));
   if(Math.abs(target.x-20)<1.5&&Math.abs(target.z)<1.5)target.x=p.x<20?18.4:21.6;
   if(broken>=0)target=t-broken>3?new Vector3(17.4,1.8,2.7):new Vector3(p.x+Math.sin(camera.rotation.y)*1.6,1.75,p.z+Math.cos(camera.rotation.y)*1.6);
   verity.update(t,camera,target,10,dt,motion);
-  return broken>=0&&t-broken>5&&camera.position.z>5&&Math.abs(camera.position.x-20)<1.7;
+  return broken>=0&&t-broken>8&&camera.position.z>5&&Math.abs(camera.position.x-20)<1.7;
  }};
 }

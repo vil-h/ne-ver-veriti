@@ -1,7 +1,35 @@
 {
-  "version": "0.4",
-  "status": "recordings-required",
+  "version": "0.6",
+  "status": "recorded",
   "lines": [
+    {
+      "id": "pitStop",
+      "speaker": "Верити",
+      "text": "Стой… Не надо прыгать.",
+      "emotion": "friendly",
+      "file": "audio/voice/15-pit-stop.mp3"
+    },
+    {
+      "id": "pitDanger",
+      "speaker": "Верити",
+      "text": "Там опасно. Ты же мне доверяешь?",
+      "emotion": "suspicious",
+      "file": "audio/voice/16-pit-danger.mp3"
+    },
+    {
+      "id": "pitPlease",
+      "speaker": "Верити",
+      "text": "Пожалуйста… Доверься мне.",
+      "emotion": "friendly",
+      "file": "audio/voice/17-pit-please.mp3"
+    },
+    {
+      "id": "pitGood",
+      "speaker": "Верити",
+      "text": "Молодец…",
+      "emotion": "friendly",
+      "file": "audio/voice/18-pit-good.mp3"
+    },
     {
       "id": "cakeWelcome",
       "speaker": "Верити",

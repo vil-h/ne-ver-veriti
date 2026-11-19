@@ -5,3 +5,5 @@
 .symbol-slots{display:flex;gap:10px;margin:24px 0}.symbol-slots button{flex:1;min-width:0;padding:16px 4px;background:#1d2924;color:#e8d8ae;border:1px solid #a98d54;font-size:12px}.symbol-slots span{display:block;font-size:34px;margin-bottom:8px}
 
 #jump-button{position:fixed;z-index:4;right:24px;bottom:100px;padding:18px 28px;background:#d4b77e;color:#172319;border:1px solid #f7dfac;font-weight:bold}#chase-shade{position:fixed;inset:0;pointer-events:none;z-index:2}#screen{position:relative;z-index:5}.touch #jump-button{right:18px;bottom:110px;max-width:47vw}.touch:has(#jump-button:not([hidden])) .swipe-hint{display:none}
+
+#trust-button{position:fixed;right:24px;bottom:152px;z-index:12;padding:16px 24px;background:#bfa163;color:#151911;border:1px solid #e7d4a0;border-radius:5px;font:600 16px sans-serif;touch-action:manipulation}#trust-button[hidden]{display:none}.touch #trust-button{bottom:200px;right:20px}

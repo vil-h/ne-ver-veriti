@@ -6,7 +6,7 @@ import {DynamicTexture} from '@babylonjs/core/Materials/Textures/dynamicTexture.
 import {Color3} from '@babylonjs/core/Maths/math.color.js';
 import {Vector3} from '@babylonjs/core/Maths/math.vector.js';
 import {PointLight} from '@babylonjs/core/Lights/pointLight.js';
-import {cells,walls,crates,route,spawn,monsterSpawn,pit,obstacles} from './chase-layout.js';
+import {cells,walls,crates,route,spawn,monsterSpawn,pit,obstacles,gates} from './chase-layout.js';
 export function createChaseRoom(scene,m){
  const root=new TransformNode('technical-chase',scene),pieces=[];
  function mat(name,color,glow=0){const a=new StandardMaterial(name,scene);a.diffuseColor=Color3.FromHexString(color);a.emissiveColor=a.diffuseColor.scale(glow);a.specularColor.set(.04,.04,.04);return a;}
@@ -45,6 +45,12 @@ export function createChaseRoom(scene,m){
  box('ledge-stripe',80,.02,153.8,4,.04,.18,red);
  // Batch static props by material; only two dynamic lights throughout the chase.
  const groups=new Map();for(const a of pieces){const g=groups.get(a.material)||[];g.push(a);groups.set(a.material,g);}for(const [material,list] of groups){const merged=Mesh.MergeMeshes(list,true,true,undefined,false,false);merged.parent=root;merged.material=material;merged.isPickable=false;}
+ const shutters=gates.map((g,i)=>{const panel=box('shutter-'+i,g.x,4.7,g.z,3.8,3.1,.22,rust);return {g,panel};});
+ // Distinct service sections: repeated ribs, cool pump bay, dangling cable racks.
+ for(const z of [60,68,84,92]){box('service-rib',110.18,1.6,z,.13,3.2,.14,rust);box('service-rib',113.82,1.6,z,.13,3.2,.14,rust);}
+ const cool=mat('cold-service-light','#66adb2',.8);
+ for(const z of [60,80,92])box('pump-bay-light',112,3.04,z,1.5,.04,.12,cool);
+ for(const z of [108,124,140]){const cable=MeshBuilder.CreateTube('hanging-cable',{path:[new Vector3(78.3,3.1,z),new Vector3(79,2.9,z+.15),new Vector3(80,2.7,z+.2),new Vector3(81.7,3.1,z)],radius:.025,tessellation:6},scene);cable.parent=root;cable.material=dark;cable.isPickable=false;}
  const light=new PointLight('chase-local',new Vector3(80,2.6,8),scene);light.diffuse=new Color3(.75,.84,.7);light.range=22;
  const threat=new PointLight('chase-threat',new Vector3(80,2,0),scene);threat.diffuse=new Color3(1,.14,.035);threat.range=15;
  function enable(v){root.setEnabled(v);light.setEnabled(v);threat.setEnabled(v);}
@@ -52,10 +58,19 @@ export function createChaseRoom(scene,m){
  return {obstacles,enable,
  enter(camera,verity){enable(true);camera.position.set(spawn.x,1.65,spawn.z);camera.rotation.set(.05,0,0);verity.reset();verity.setTransformation(2);verity.root.setEnabled(true);verity.root.position.set(monsterSpawn.x,1.65,monsterSpawn.z);},
  update(t,dt,camera,verity,pursuer,state,motion){
-  const p=pursuer.position,origin=new Vector3(p.x,1.65,p.z);verity.update(t,camera,origin,10,dt,motion);verity.root.position.x=p.x;verity.root.position.z=p.z;
-  light.position.set(camera.position.x,2.65,camera.position.z);light.intensity=1.35*(motion?1-.045*Math.sin(t*11):1);threat.position.set(p.x,2,p.z);threat.intensity=2;
+  for(const {g,panel} of shutters)panel.position.y=g.disabled?4.7:1.55;
+  const phase=state.phase,p=pursuer.position;
+  const returning=phase==='pitReturn';const friendly=['pitTalk','choice','trusting'].includes(phase);
+  verity.setTransformation(friendly?0:returning?Math.max(0,2-state.phaseTime*.85):2);
+  verity.setGait(phase==='running'?(pursuer.burst?1:.72):0);verity.setAttack(phase==='caught'?Math.min(1,state.phaseTime*5):0);
+  const origin=new Vector3(p.x,1.65,p.z);verity.update(t,camera,origin,10,dt,motion);verity.root.position.x=p.x;verity.root.position.z=p.z;
+  light.position.set(camera.position.x,2.65,camera.position.z);light.intensity=1.35*(motion?1-.045*Math.sin(t*11):1);threat.position.set(p.x,2,p.z);threat.intensity=friendly?.25:returning?Math.max(.25,2-state.phaseTime):2;
   if(state.phase==='falling'){const u=state.phaseTime;camera.position.z=153.5+Math.min(4,u*2);camera.position.x=80;camera.position.y=1.65-2.8*u*u;camera.rotation.x=motion?Math.min(.95,.1+u*.35):.35;}
-  if(state.phase==='caught'){camera.rotation.y=Math.atan2(p.x-camera.position.x,p.z-camera.position.z);camera.rotation.x=0;verity.root.scaling.scaleInPlace(1+Math.min(1,state.phaseTime)*.65);}
+  if(state.phase==='caught'){
+   camera.rotation.y=Math.atan2(p.x-camera.position.x,p.z-camera.position.z);camera.rotation.x=-.14;
+   const approach=Math.min(1,state.phaseTime/.28),distance=Math.max(1.05,Math.hypot(p.x-camera.position.x,p.z-camera.position.z)*(1-approach));
+   verity.root.position.set(camera.position.x+Math.sin(camera.rotation.y)*distance,.85,camera.position.z+Math.cos(camera.rotation.y)*distance);
+  }
  }
  };
 }

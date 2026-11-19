@@ -1,6 +1,6 @@
 import {ChaseAudio} from './chase-audio.js';
 export class Sound {
- constructor(){this.ctx=null;this.paused=true;this.settings={master:true,ambience:.35,effects:.5,voice:.8};this.sources=[];}
+ constructor(){this.ctx=null;this.paused=true;this.settings={master:true,ambience:.35,effects:.5,voice:.8};this.sources=[];this.cues=new Map();this.cueToken=0;}
  async start(){
   try{
    if(!this.ctx){
@@ -18,7 +18,11 @@ export class Sound {
    this.paused=false;this.sync(this.settings);await this.ctx.resume();
   }catch{/* Unsupported audio must not prevent play. */}
  }
- sync(settings){this.settings=settings;if(!this.ctx)return;const t=this.ctx.currentTime;this.master.gain.setTargetAtTime(settings.master?1:0,t,.07);for(const name of ['ambience','effects'])this[name].gain.setTargetAtTime(settings[name],t,.07);this.voiceGain.gain.setTargetAtTime(settings.voice,t,.07);}
+ sync(settings){this.settings=settings;if(!this.ctx)return;const t=this.ctx.currentTime;this.master.gain.setTargetAtTime(settings.master?1:0,t,.07);for(const name of ['ambience','effects'])this[name].gain.setTargetAtTime(settings[name]*(this.hushed?.08:1),t,.07);this.voiceGain.gain.setTargetAtTime(settings.voice,t,.07);}
+ hush(value){this.hushed=value;this.sync(this.settings);}
+ async preloadCues(){for(const name of ['transform','attack']){try{this.cues.set(name,await this.loadVoice((import.meta.env?.BASE_URL||'./')+'audio/effects/'+name+'.mp3'));}catch{}}}
+ playCue(name){if(!this.ctx||this.paused)return;const buffer=this.cues.get(name);if(!buffer){this.alarm();return;}const source=this.ctx.createBufferSource();source.buffer=buffer;const gain=this.ctx.createGain();gain.gain.value=.65;source.connect(gain);gain.connect(this.effects);this.sources.push(source);source.onended=()=>{source.disconnect();gain.disconnect();this.sources=this.sources.filter(s=>s!==source);};source.start();}
+ stopCues(){for(const s of this.sources){try{s.stop();}catch{}}this.sources=[];}
  pause(value){this.paused=value;if(this.ctx){if(value)this.ctx.suspend().catch(()=>{});else this.ctx.resume().catch(()=>{});}}
  setListener(position,yaw){
   if(!this.ctx)return;const l=this.ctx.listener;
@@ -52,7 +56,7 @@ export class Sound {
  }
  alarm(){if(!this.ctx||this.paused)return;this.noiseBurst(.7,.17,1200,this.effects);const o=this.ctx.createOscillator(),g=this.ctx.createGain(),t=this.ctx.currentTime;o.type='sawtooth';o.frequency.setValueAtTime(180,t);o.frequency.linearRampToValueAtTime(53,t+1.8);g.gain.setValueAtTime(.07,t);g.gain.exponentialRampToValueAtTime(.0001,t+2);o.connect(g);g.connect(this.effects);o.start();o.stop(t+2);o.onended=()=>{o.disconnect();g.disconnect();};}
  startChase(){this.stopChase();if(this.ctx){this.chaseAudio=new ChaseAudio(this);this.alarm();}}
- stopChase(){this.chaseAudio?.stop();this.chaseAudio=null;}
+ stopChase(){this.stopCues();this.chaseAudio?.stop();this.chaseAudio=null;}
  updateChase(time,p,d){this.chaseAudio?.update(time,p,d);}
  fall(){if(this.ctx&&!this.paused)this.noiseBurst(2.3,.25,1600,this.effects);}
  voiceLevel(){if(!this.voiceAnalyser)return 0;this.voiceAnalyser.getByteTimeDomainData(this.voiceSamples);let sum=0;for(const v of this.voiceSamples)sum+=((v-128)/128)**2;return Math.sqrt(sum/this.voiceSamples.length);}
@@ -60,13 +64,6 @@ export class Sound {
  playVoice(buffer,emotion,onend){
   if(!this.ctx||!buffer)return null;
   const source=this.ctx.createBufferSource();source.buffer=buffer;
-  const filter=this.ctx.createBiquadFilter();filter.type='lowpass';filter.frequency.value=emotion==='angry'?2100:emotion==='suspicious'?3500:9000;
-  const gain=this.ctx.createGain();gain.gain.value=emotion==='suspicious'?.72:emotion==='angry'?.85:1;
-  source.playbackRate.value=emotion==='suspicious'?.94:emotion==='angry'?.9:1;
-  source.connect(filter);
-  if(emotion==='angry'){
-   const distortion=this.ctx.createWaveShaper(),curve=new Float32Array(512);for(let i=0;i<512;i++){const x=i/255.5-1;curve[i]=Math.tanh(x*1.8)/1.8;}distortion.curve=curve;filter.connect(distortion);distortion.connect(gain);
-  }else filter.connect(gain);
-  gain.connect(this.voiceGain);source.onended=onend;source.start();return source;
+  source.connect(this.voiceGain);source.onended=()=>{source.disconnect();onend?.();};source.start();return source;
  }
 }

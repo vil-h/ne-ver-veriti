@@ -1,4 +1,214 @@
 {
-  "status": "recordings-required",
-  "files": {}
+  "generator": "Piper 1.8.0 / ru_RU-denis-medium (rdh CC0 base)",
+  "files": {
+    "audio/voice/15-pit-stop.ogg": "audio/voice/15-pit-stop.mp3",
+    "audio/voice/16-pit-danger.ogg": "audio/voice/16-pit-danger.mp3",
+    "audio/voice/17-pit-please.ogg": "audio/voice/17-pit-please.mp3",
+    "audio/voice/18-pit-good.ogg": "audio/voice/18-pit-good.mp3",
+    "audio/voice/08-cake-welcome.ogg": "audio/voice/08-cake-welcome.mp3",
+    "audio/voice/09-cake-hint.ogg": "audio/voice/09-cake-hint.mp3",
+    "audio/voice/10-cake-solved.ogg": "audio/voice/10-cake-solved.mp3",
+    "audio/voice/11-cake-concern.ogg": "audio/voice/11-cake-concern.mp3",
+    "audio/voice/12-cake-insist.ogg": "audio/voice/12-cake-insist.mp3",
+    "audio/voice/13-cake-calm.ogg": "audio/voice/13-cake-calm.mp3",
+    "audio/voice/14-cake-rage.ogg": "audio/voice/14-cake-rage.mp3",
+    "audio/voice/01-hello.ogg": "audio/voice/01-hello.mp3",
+    "audio/voice/02-box.ogg": "audio/voice/02-box.mp3",
+    "audio/voice/03-fuse.ogg": "audio/voice/03-fuse.mp3",
+    "audio/voice/04-switch.ogg": "audio/voice/04-switch.mp3",
+    "audio/voice/05-light.ogg": "audio/voice/05-light.mp3",
+    "audio/voice/06-corridor.ogg": "audio/voice/06-corridor.mp3",
+    "audio/voice/07-doors.ogg": "audio/voice/07-doors.mp3"
+  },
+  "recordings": [
+    {
+      "file": "audio/voice/demo-friendly.mp3",
+      "text": "Привет! Я Верити. Не бойся, я помогу тебе.",
+      "emotion": "friendly",
+      "seconds": 4.547,
+      "rms": 0.0916,
+      "peak": 0.6782,
+      "sha256": "5f43a07abdae98329abc8c572f39e0494bec6b71508d4404690a9e4fb4b70eb6"
+    },
+    {
+      "file": "audio/voice/demo-suspicious.mp3",
+      "text": "Там опасно. Ты же мне доверяешь?",
+      "emotion": "suspicious",
+      "seconds": 3.382,
+      "rms": 0.094,
+      "peak": 0.6635,
+      "sha256": "41cddfaf5db7d2fdea3a141bcfc3db80d6d0a492e7d5bae32d0a3f81cc2938c5"
+    },
+    {
+      "file": "audio/voice/demo-angry.mp3",
+      "text": "Я же просил тебя не нажимать!",
+      "emotion": "angry",
+      "seconds": 2.205,
+      "rms": 0.0933,
+      "peak": 0.4366,
+      "sha256": "aeae0b7e63da9655a105686066a3a93f407bc7785d000462cb30c0baf511d71c"
+    },
+    {
+      "file": "audio/voice/15-pit-stop.mp3",
+      "text": "Стой… Не надо прыгать.",
+      "emotion": "friendly",
+      "seconds": 1.661,
+      "rms": 0.0866,
+      "peak": 0.5543,
+      "sha256": "7862f04411af34316aa9b423ca25e251254aaa9007c344350a8bd3c7ebf6a38f"
+    },
+    {
+      "file": "audio/voice/16-pit-danger.mp3",
+      "text": "Там опасно. Ты же мне доверяешь?",
+      "emotion": "suspicious",
+      "seconds": 3.491,
+      "rms": 0.0923,
+      "peak": 0.6745,
+      "sha256": "2fe1f896e68a5b3198b8039aac0d826486834ba8261e85aa410ae16958b4e50a"
+    },
+    {
+      "file": "audio/voice/17-pit-please.mp3",
+      "text": "Пожалуйста… Доверься мне.",
+      "emotion": "friendly",
+      "seconds": 1.896,
+      "rms": 0.0871,
+      "peak": 0.5457,
+      "sha256": "91b5bacb8e8ca1874f8507392f4c4cd992fb58c7dc4f3484c10ce68dae351054"
+    },
+    {
+      "file": "audio/voice/18-pit-good.mp3",
+      "text": "Молодец…",
+      "emotion": "friendly",
+      "seconds": 1.049,
+      "rms": 0.0819,
+      "peak": 0.543,
+      "sha256": "48b22fffb2141fa1dfadb263505c396d2daf14e810ca4169fc5fb4631fa72e08"
+    },
+    {
+      "file": "audio/voice/08-cake-welcome.mp3",
+      "text": "Ура! Я знал, что ты мне доверяешь! Смотри, я даже приготовил для тебя тортик! А потом откроем следующую дверь.",
+      "emotion": "friendly",
+      "seconds": 8.509,
+      "rms": 0.0854,
+      "peak": 0.6731,
+      "sha256": "981a65d5886aa6a08263e2254d257bd173ffcacf74a48e246755ad6bc7f8265a"
+    },
+    {
+      "file": "audio/voice/09-cake-hint.mp3",
+      "text": "На замке три знака. Посмотри на праздничные вещи — они подскажут порядок.",
+      "emotion": "friendly",
+      "seconds": 5.515,
+      "rms": 0.0861,
+      "peak": 0.6569,
+      "sha256": "68b1054e329b061f18d410bbb5c7b335041ba98de44592c63f41307087581456"
+    },
+    {
+      "file": "audio/voice/10-cake-solved.mp3",
+      "text": "Вот и всё! Я же говорил, вместе мы справимся. Проходи!",
+      "emotion": "friendly",
+      "seconds": 4.856,
+      "rms": 0.0951,
+      "peak": 0.6862,
+      "sha256": "effef950656fbc5e7e756eff02d4d56fd9f85a275c375dfcf2d263c627b7add7"
+    },
+    {
+      "file": "audio/voice/11-cake-concern.mp3",
+      "text": "Эй, зачем ты туда смотришь? Там ничего интересного.",
+      "emotion": "suspicious",
+      "seconds": 4.469,
+      "rms": 0.0865,
+      "peak": 0.6764,
+      "sha256": "60515ad98701ba1e604447c740692993219a0cc484618f7433e17df3fd4106d0"
+    },
+    {
+      "file": "audio/voice/12-cake-insist.mp3",
+      "text": "Не нажимай на эту кнопку! Мы же друзья!",
+      "emotion": "angry",
+      "seconds": 3.076,
+      "rms": 0.1015,
+      "peak": 0.4376,
+      "sha256": "215cfd283b204455a9b49e71e1b81792180b1c96881f2ad8db1c10699999ca51"
+    },
+    {
+      "file": "audio/voice/13-cake-calm.mp3",
+      "text": "Вот так. Давай лучше вернёмся к празднику.",
+      "emotion": "friendly",
+      "seconds": 3.454,
+      "rms": 0.0912,
+      "peak": 0.6833,
+      "sha256": "d233ec1ff14d54e02d4e2e58f6d86e7004b08aba5b306175c06003593764ea64"
+    },
+    {
+      "file": "audio/voice/14-cake-rage.mp3",
+      "text": "Я ЖЕ ПРОСИЛ ТЕБЯ НЕ НАЖИМАТЬ!",
+      "emotion": "angry",
+      "seconds": 2.249,
+      "rms": 0.0923,
+      "peak": 0.4036,
+      "sha256": "1b4ec2fb1d4435d50f054e3e9af4bc9375125649a986a0b3a90e3b473b5700e5"
+    },
+    {
+      "file": "audio/voice/01-hello.mp3",
+      "text": "Привет! Я Верити. Не бойся, я помогу тебе выбраться. В ящике стола должен быть предохранитель.",
+      "emotion": "friendly",
+      "seconds": 7.686,
+      "rms": 0.0856,
+      "peak": 0.6814,
+      "sha256": "c160ffa0886e762f5f9441931683cd8ae4e7f01dcf8a6c5bc2425b38b474fd86"
+    },
+    {
+      "file": "audio/voice/02-box.mp3",
+      "text": "Спасибо, что выпустил меня. Теперь давай включим свет.",
+      "emotion": "friendly",
+      "seconds": 4.132,
+      "rms": 0.0875,
+      "peak": 0.6806,
+      "sha256": "f0ce4e4ae3a76fe7e3d72d7d3c8d70aa96cd5231c1ccef32c89619716042a2f2"
+    },
+    {
+      "file": "audio/voice/03-fuse.mp3",
+      "text": "Вот он! Поставь его в щиток рядом с дверью. Потом подними выключатель.",
+      "emotion": "friendly",
+      "seconds": 5.607,
+      "rms": 0.0815,
+      "peak": 0.63,
+      "sha256": "ac75db1c659452ee1702abad9c0dcbeb6ee24e9044151c52bb9baed41fb4f7ee"
+    },
+    {
+      "file": "audio/voice/04-switch.mp3",
+      "text": "Отлично. Теперь подними выключатель — и будет свет!",
+      "emotion": "friendly",
+      "seconds": 4.093,
+      "rms": 0.0901,
+      "peak": 0.685,
+      "sha256": "3546e71bc1e9c476119b254d3a0b32d2405b90ad36136d80c3715b2cc83f6fb3"
+    },
+    {
+      "file": "audio/voice/05-light.mp3",
+      "text": "Видишь? Уже лучше. Дверь теперь должна открыться. Я с тобой.",
+      "emotion": "friendly",
+      "seconds": 5.815,
+      "rms": 0.0899,
+      "peak": 0.6789,
+      "sha256": "6e59eca8241316b9ab991f7a73fafaa64e975d0ca82846792ef07c373847a5a3"
+    },
+    {
+      "file": "audio/voice/06-corridor.mp3",
+      "text": "Просто иди вперёд. Здесь немного… непривычно.",
+      "emotion": "suspicious",
+      "seconds": 4.141,
+      "rms": 0.091,
+      "peak": 0.6554,
+      "sha256": "bf91a49d109479e42f66a269e707f06b72ed1442a6acf665fecdf0e6349af885"
+    },
+    {
+      "file": "audio/voice/07-doors.mp3",
+      "text": "Вот! Красивая дверь слева. Там тепло. Выбери её, хорошо?",
+      "emotion": "suspicious",
+      "seconds": 6.412,
+      "rms": 0.0902,
+      "peak": 0.6791,
+      "sha256": "87fa1eac348d1b7f2f8c8139aa4cf91e50f73f93decfab65f107c81c2a421006"
+    }
+  ]
 }

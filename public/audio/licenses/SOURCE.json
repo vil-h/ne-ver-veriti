@@ -1,0 +1,10 @@
+{
+  "source": "https://huggingface.co/rhasspy/piper-voices/tree/main/ru/ru_RU/denis/medium",
+  "retrieved": "2026-11-19",
+  "model": "rdh CC0 base, requires Piper >=1.5",
+  "sha256": {
+    "denis.onnx": "879bc365cb14d1380e3f5ed6044162ccf54c99f6161871569b7f830aec3ce841",
+    "denis.onnx.json": "5891b94580ae739a8cdc5d17591db6800333f85164d13599aca893883d99b9eb",
+    "MODEL_CARD": "917110d5056810771fd3daea2644bbadf1341816b7631f2043b33be245903432"
+  }
+}

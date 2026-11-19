@@ -1,6 +1,10 @@
 const voice=(id,text,emotion='friendly')=>({speaker:'Верити',text,emotion,voice:`audio/voice/${id}.ogg`});
 const thought=text=>({speaker:'Вы',text,emotion:'neutral'});
 export const lines={
+ pitStop:voice('15-pit-stop','Стой… Не надо прыгать.'),
+ pitDanger:voice('16-pit-danger','Там опасно. Ты же мне доверяешь?','suspicious'),
+ pitPlease:voice('17-pit-please','Пожалуйста… Доверься мне.'),
+ pitGood:voice('18-pit-good','Молодец…'),
  cakeWelcome:voice('08-cake-welcome','Ура! Я знал, что ты мне доверяешь! Смотри, я даже приготовил для тебя тортик! А потом откроем следующую дверь.'),
  treat:thought('Идеальный крем. Ни одного следа ножа. Даже запаха нет.'),
  partyNote:thought('На карточке порядок: свеча, подарок, звезда. Нужно найти их знаки.'),
