@@ -7,3 +7,6 @@
 #jump-button{position:fixed;z-index:4;right:24px;bottom:100px;padding:18px 28px;background:#d4b77e;color:#172319;border:1px solid #f7dfac;font-weight:bold}#chase-shade{position:fixed;inset:0;pointer-events:none;z-index:2}#screen{position:relative;z-index:5}.touch #jump-button{right:18px;bottom:110px;max-width:47vw}.touch:has(#jump-button:not([hidden])) .swipe-hint{display:none}
 
 #trust-button{position:fixed;right:24px;bottom:152px;z-index:12;padding:16px 24px;background:#bfa163;color:#151911;border:1px solid #e7d4a0;border-radius:5px;font:600 16px sans-serif;touch-action:manipulation}#trust-button[hidden]{display:none}.touch #trust-button{bottom:200px;right:20px}
+
+#hall-phone{position:fixed;bottom:9%;right:8%;z-index:5;background:#e8e9df;color:#17282a;border:8px solid #202827;border-radius:22px;padding:24px 20px 36px;width:min(310px,80vw);box-shadow:0 12px 45px #0007}
+#hall-phone h3{font-size:1rem;margin:.6em 0}#hall-phone p{background:#cbdacd;border-radius:12px;padding:12px}#hall-phone small{letter-spacing:.15em}

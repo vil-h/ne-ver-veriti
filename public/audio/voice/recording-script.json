@@ -1,7 +1,133 @@
 {
-  "version": "0.7",
+  "version": "0.8",
   "status": "recorded",
   "lines": [
+    {
+      "id": "hallWelcome",
+      "speaker": "Верити",
+      "text": "Ну вот! Я же говорил, что мы справимся. Осталась всего одна дверь — и ты дома!",
+      "emotion": "friendly",
+      "file": "audio/voice/22-hall-welcome.mp3"
+    },
+    {
+      "id": "hallBeauty",
+      "speaker": "Верити",
+      "text": "Посмотри, как здесь красиво!",
+      "emotion": "friendly",
+      "file": "audio/voice/23-hall-beauty.mp3"
+    },
+    {
+      "id": "hallHome",
+      "speaker": "Верити",
+      "text": "Тебе ведь уже хочется домой?",
+      "emotion": "friendly",
+      "file": "audio/voice/24-hall-home.mp3"
+    },
+    {
+      "id": "hallExit",
+      "speaker": "Верити",
+      "text": "Не нужно ничего искать. Выход прямо перед тобой.",
+      "emotion": "friendly",
+      "file": "audio/voice/25-hall-exit.mp3"
+    },
+    {
+      "id": "hallEquipment",
+      "speaker": "Верити",
+      "text": "Зачем ты туда смотришь? Это просто старое оборудование.",
+      "emotion": "suspicious",
+      "file": "audio/voice/26-hall-equipment.mp3"
+    },
+    {
+      "id": "hallPlease",
+      "speaker": "Верити",
+      "text": "Пожалуйста, не усложняй. Мы ведь почти выбрались.",
+      "emotion": "suspicious",
+      "file": "audio/voice/27-hall-please.mp3"
+    },
+    {
+      "id": "hallFound",
+      "speaker": "Верити",
+      "text": "Ты не должен был это находить.",
+      "emotion": "suspicious",
+      "file": "audio/voice/28-hall-found.mp3"
+    },
+    {
+      "id": "hallFriends",
+      "speaker": "Верити",
+      "text": "Вот и молодец! Я знал, что мы друзья!",
+      "emotion": "friendly",
+      "file": "audio/voice/29-hall-friends.mp3"
+    },
+    {
+      "id": "hallAgain",
+      "speaker": "Верити",
+      "text": "Ну что, попробуем ещё раз?",
+      "emotion": "suspicious",
+      "file": "audio/voice/30-hall-again.mp3"
+    },
+    {
+      "id": "hallArchive",
+      "speaker": "Верити",
+      "text": "Привет! Я Верити…",
+      "emotion": "friendly",
+      "file": "audio/voice/31-hall-archive.mp3"
+    },
+    {
+      "id": "hallClock",
+      "speaker": "Вы",
+      "text": "03:15. Секундная стрелка стоит. А из динамиков всё ещё слышно тиканье.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "hallBedFeed",
+      "speaker": "Вы",
+      "text": "Сначала крышка была закрыта. На втором кадре Верити уже выглядывает из коробки. Кто снимал?",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "hallCorridor",
+      "speaker": "Вы",
+      "text": "За дверью «Спасение» видны торцы фанеры. Камера висит там, где я видел стену.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "hallClue",
+      "speaker": "Вы",
+      "text": "На экране Верити у стекла. Здесь он рядом со мной. За стеной под часами видна лестница. Там двойной шов.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "hallSeam",
+      "speaker": "Вы",
+      "text": "Под часами стык шире остальных. На стойке наблюдения есть камера с видом снаружи.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "hallLatch",
+      "speaker": "Вы",
+      "text": "Под кромкой скрытая ручка. Панель можно отодвинуть.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "hallTrust",
+      "speaker": "Вы",
+      "text": "На стойке у стеклянной двери просят подтвердить доверие проводнику.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "hallEntered",
+      "speaker": "Вы",
+      "text": "Ветер. Земля пружинит под ногами.",
+      "emotion": "neutral",
+      "file": null
+    },
     {
       "id": "rescueAngry",
       "speaker": "Верити",

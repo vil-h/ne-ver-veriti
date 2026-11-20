@@ -1,3 +1,6 @@
+import {ExitHall} from './exit-hall-controller.js';
+import {hallTargets} from './exit-hall.js';
+import {hallEndingScreen} from './exit-hall-endings.js';
 import {Rescue,rescueTargets,rescueEnding} from './rescue.js';
 import './style.css';
 import {Chase,chaseEnding} from './chase.js';
@@ -16,9 +19,9 @@ const defaults={master:true,ambience:.35,effects:.5,voice:.8,sensitivity:1,subti
 let settings={...defaults};try{settings={...defaults,...JSON.parse(localStorage.getItem('verity-3d-settings')||'{}')};}catch{}
 for(const k of ['ambience','effects','voice'])settings[k]=Math.max(0,Math.min(1,Number(settings[k])||0));
 settings.sensitivity=Math.max(.25,Math.min(2.5,Number(settings.sensitivity)||1));
-let state=initialState(),mode='menu',paused=true,time=0,last=performance.now(),stepTime=0,target=null,lastInteract=-1,shownZones=new Set(),world,input,dialogue,chase,rescue;
+let state=initialState(),mode='menu',paused=true,time=0,last=performance.now(),stepTime=0,target=null,lastInteract=-1,shownZones=new Set(),world,input,dialogue,chase,rescue,hall;
 const sound=new Sound();
-app.innerHTML=`<canvas id="game-canvas" tabindex="0" aria-label="Трёхмерная игра. WASD — движение, мышь или стрелки — обзор, E — взаимодействие."></canvas><div class="vignette" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div><div id="hud" hidden><header class="hud-top"><div><p class="eyebrow" id="chapter">01 / ПРОБУЖДЕНИЕ</p><p class="objective" id="objective"></p></div><button id="pause-button" class="small-button" aria-label="Пауза">Ⅱ <span>Пауза</span></button></header><div id="reticle" aria-hidden="true"></div><div id="interaction"><span id="target-label"></span><button id="interact-button" aria-label="Взаимодействовать"><kbd>E</kbd><span id="action-label">Осмотреть</span></button></div><section id="subtitle" aria-live="polite" hidden><p id="speaker"></p><p id="speech"></p></section><div id="controls-note">WASD — идти <span>·</span> Мышь — обзор <span>·</span> E — действие</div><div id="touch-controls"><div id="joystick" role="group" aria-label="Джойстик перемещения"><div id="joystick-knob"></div></div><div class="swipe-hint">Обзор — свайп<br>по свободной части экрана</div></div></div><button id="jump-button" hidden>Space · Прыгнуть</button><button id="trust-button" hidden>E · Довериться</button><div id="chase-shade" aria-hidden="true"></div><div id="screen"></div><div id="loading"><span class="loading-ring"></span><p>Комната вспоминает вас…</p></div>`;
+app.innerHTML=`<canvas id="game-canvas" tabindex="0" aria-label="Трёхмерная игра. WASD — движение, мышь или стрелки — обзор, E — взаимодействие."></canvas><div class="vignette" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div><div id="hud" hidden><header class="hud-top"><div><p class="eyebrow" id="chapter">01 / ПРОБУЖДЕНИЕ</p><p class="objective" id="objective"></p></div><button id="pause-button" class="small-button" aria-label="Пауза">Ⅱ <span>Пауза</span></button></header><div id="reticle" aria-hidden="true"></div><div id="interaction"><span id="target-label"></span><button id="interact-button" aria-label="Взаимодействовать"><kbd>E</kbd><span id="action-label">Осмотреть</span></button></div><section id="subtitle" aria-live="polite" hidden><p id="speaker"></p><p id="speech"></p></section><div id="controls-note">WASD — идти <span>·</span> Мышь — обзор <span>·</span> E — действие</div><div id="touch-controls"><div id="joystick" role="group" aria-label="Джойстик перемещения"><div id="joystick-knob"></div></div><div class="swipe-hint">Обзор — свайп<br>по свободной части экрана</div></div></div><button id="jump-button" hidden>Space · Прыгнуть</button><button id="trust-button" hidden>E · Довериться</button><div id="chase-shade" aria-hidden="true"></div><aside id="hall-phone" hidden><small>СООБЩЕНИЯ</small><h3>Неизвестный отправитель</h3><p>А ты быстро учишься :)</p></aside><div id="screen"></div><div id="loading"><span class="loading-ring"></span><p>Комната вспоминает вас…</p></div>`;
 const $=s=>document.querySelector(s),canvas=$('#game-canvas'),screen=$('#screen');
 const qa=import.meta.env.DEV&&new URLSearchParams(location.search).has('qa');
 let renderedFrames=0,diagnosticError='';
@@ -40,15 +43,15 @@ function clearChase(){chase?.stop();$('#jump-button').hidden=true;$('#trust-butt
 function beginChase(){dialogue.stop();state.zone='chase';mode='game';screen.hidden=true;screen.innerHTML='';$('#hud').hidden=false;setPaused(false);chase.start();input.clear();stepTime=0;target=null;canvas.focus();updateHud();}
 function endChase(phase){clearChase();dialogue.stop();mode='ending';setPaused(true);$('#hud').hidden=true;screen.hidden=false;screen.innerHTML=chaseEnding(phase);screen.querySelector('button').focus();}
 function menu(){
- clearChase();rescue?.reset();
+ clearChase();rescue?.reset();hall?.reset();
  mode='menu';setPaused(true);dialogue?.stop();$('#hud').hidden=true;
- screen.innerHTML=`<main class="menu"><header><span class="eyebrow">ИСТОРИЯ О ДОВЕРИИ</span><span class="build">0.7 / ТЫ НЕ ПРОСНУЛСЯ</span></header><div class="menu-copy"><p class="eyebrow">ОДИН ДРУГ. ДВЕ ДВЕРИ.</p><h1>НЕ ВЕРЬ<br><em>ВЕРИТИ!</em></h1><p class="tagline">Он знает выход.<br>По крайней мере, так он говорит.</p><button class="primary" data-ui="start">Начать игру <span>↗</span></button><button class="secondary" data-ui="settings">Настройки</button><p class="warning">△ Тревожная атмосфера, изменения света и звуки.<br>Выберите комфортную громкость.</p></div><footer><span>ОТ ПЕРВОГО ЛИЦА</span><span>МЫШЬ И КЛАВИАТУРА / КАСАНИЕ</span></footer></main>`;
+ screen.innerHTML=`<main class="menu"><header><span class="eyebrow">ИСТОРИЯ О ДОВЕРИИ</span><span class="build">0.8 / ЗАЛ ВЫХОДА</span></header><div class="menu-copy"><p class="eyebrow">ОДИН ДРУГ. ДВЕ ДВЕРИ.</p><h1>НЕ ВЕРЬ<br><em>ВЕРИТИ!</em></h1><p class="tagline">Он знает выход.<br>По крайней мере, так он говорит.</p><button class="primary" data-ui="start">Начать игру <span>↗</span></button><button class="secondary" data-ui="settings">Настройки</button><p class="warning">△ Тревожная атмосфера, изменения света и звуки.<br>Выберите комфортную громкость.</p></div><footer><span>ОТ ПЕРВОГО ЛИЦА</span><span>МЫШЬ И КЛАВИАТУРА / КАСАНИЕ</span></footer></main>`;
  if(qa)screen.querySelector('.menu-copy').insertAdjacentHTML('beforeend','<button data-ui="qa-rescue">QA: спасение</button><button data-ui="qa-wake">QA: пробуждение</button><button data-ui="qa-cake">QA: праздник</button><button data-ui="qa-chase">QA: погоня</button><button data-ui="qa-pit">QA: яма</button>');
  screen.hidden=false;document.body.classList.add('in-menu');
 }
 async function start(){
  clearChase();
- rescue.reset();
+ hall.reset();rescue.reset();
  setPaused(true);state=initialState();atmosphere.reset();shownZones.clear();time=0;stepTime=0;lastInteract=-1;world.reset();dialogue.stop();mode='game';screen.hidden=true;screen.innerHTML='';$('#hud').hidden=false;document.body.classList.remove('in-menu');save();await sound.start();sound.preloadCues();setPaused(false);last=performance.now();canvas.focus();updateHud();dialogue.say('wake');
 }
 function pause(){if(mode!=='game'||paused)return;setPaused(true);pauseScreen();}
@@ -61,14 +64,15 @@ function settingsScreen(){
 function updateHud(){
  $('#objective').textContent=state.zone==='chase'?(settings.mobile?'Бегите по коридору. Ускорение включено':'Бегите по коридору · Shift — бег'):objective(state);$('#chapter').textContent=state.zone==='falseAwakening'?'05 / УТРО':state.zone==='rescueRoom'?'03 / ТЕХНИЧЕСКИЙ УЗЕЛ':state.zone==='chase'?'04 / ПОГОНЯ':state.zone==='cakeRoom'?'03 / ПРАЗДНИК':state.zone==='bedroom'?'01 / ПРОБУЖДЕНИЕ':state.zone==='doors'?'02 / ДВЕ ДВЕРИ':'02 / КОРИДОР';
 }
-const targetNames={...rescueTargets,treat:'Торт',partyNote:'Праздничная карточка',candleClue:'Подставка свечей',giftClue:'Подарок',starClue:'Звезда',cakeEntry:'Входная дверь',codeLock:'Символьный замок',redButton:'Красная кнопка',cakeExit:'Дверь с замком',box:'Необычная коробка',drawer:'Ящик письменного стола',panel:'Электрический щиток',exit:'Дверь спальни',cake:'Красивая дверь',rescue:'Дверь «Спасение»',bed:'Кровать',window:'Окно',wardrobe:'Шкаф'};
-function targetText(action){if(action==='cakeExit')return state.cake.unlocked?'Пройти':'Осмотреть';if(action==='codeLock')return 'Ввести знаки';if(action==='redButton')return 'Нажать';if(action==='box')return state.opened?'Осмотреть':'Открыть';if(action==='drawer')return 'Открыть ящик';if(action==='panel')return !state.fuse?'Осмотреть':!state.installed?'Вставить предохранитель':!state.power?'Включить свет':'Осмотреть';if(action==='exit'||action==='cake'||action==='rescue')return 'Открыть дверь';return 'Осмотреть';}
+const targetNames={...hallTargets,...rescueTargets,treat:'Торт',partyNote:'Праздничная карточка',candleClue:'Подставка свечей',giftClue:'Подарок',starClue:'Звезда',cakeEntry:'Входная дверь',codeLock:'Символьный замок',redButton:'Красная кнопка',cakeExit:'Дверь с замком',box:'Необычная коробка',drawer:'Ящик письменного стола',panel:'Электрический щиток',exit:'Дверь спальни',cake:'Красивая дверь',rescue:'Дверь «Спасение»',bed:'Кровать',window:'Окно',wardrobe:'Шкаф'};
+function targetText(action){if(action==='trustPanel')return 'Подтвердить доверие';if(action==='seam'&&hall.state.latch)return 'Сдвинуть панель';if(['archive','corridorFeed','hallFeed'].includes(action))return 'Сменить ракурс';if(action==='cakeExit')return state.cake.unlocked?'Открыть дверь':'Осмотреть';if(action==='codeLock')return 'Ввести знаки';if(action==='redButton')return 'Нажать';if(action==='box')return state.opened?'Осмотреть':'Открыть';if(action==='drawer')return 'Открыть ящик';if(action==='panel')return !state.fuse?'Осмотреть':!state.installed?'Вставить предохранитель':!state.power?'Включить свет':'Осмотреть';if(action==='exit'||action==='cake'||action==='rescue')return 'Открыть дверь';return 'Осмотреть';}
 function interact(){
  if(state.zone==='falseAwakening')return;
  if(state.branch==='rescue'&&rescue.busy)return;
  if(state.zone==='chase'){if(!paused)chase.requestTrust();return;}
  if(paused||mode!=='game'||!target||time-lastInteract<.4)return;lastInteract=time;
  if(target==='codeLock'){if(!state.cake.collapsed){setPaused(true);lockScreen();}return;}
+ if(state.zone==='exitHall'){hall.interact(target);return;}
  const result=act(state,target);applyResult(result);
  if(result.line)dialogue.say(result.line);updateHud();
 
@@ -77,12 +81,8 @@ function applyResult(result){
  state=result.state;
  if(state.branch==='rescue'){rescue.apply(result,time);return;}
  if(result.effect==='enterCake'){world.enterCake();atmosphere.reset();atmosphere.next=time+15;target=null;input.clear();}
- else if(result.effect==='next'){finish('Следующий эпизод','Вы доверились Верити и открыли дверь. Продолжение сюжета ещё не утверждено.');return;}
+ else if(result.effect==='openHall'){world.prepareHall();world.effect('openHall',time);sound.effect('door');}
  else if(result.effect){world.effect(result.effect,time);sound.effect(result.effect);if(result.effect==='collapse')sound.playCue('transform');}
-}
-function finish(title,text){
- dialogue.stop();setPaused(true);mode='ending';$('#hud').hidden=true;screen.hidden=false;
- screen.innerHTML=`<div class="ending-wrap"><main class="ending"><p class="eyebrow">ТОЧКА ПРОДОЛЖЕНИЯ</p><h1>${title}</h1><p>${text}</p><p class="muted">Это не сюжетная концовка. Следующий этап в разработке.</p><button class="primary" data-ui="restart">Начать заново</button><button class="secondary" data-ui="menu">В главное меню</button></main></div>`;
 }
 function lockScreen(message=''){
  screen.hidden=false;screen.innerHTML=`<div class="modal-wrap"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="lock-title"><p class="eyebrow">ЗАМОК НА ДВЕРИ</p><h2 id="lock-title">Три знака</h2><p class="muted">Нажимайте на ячейки, чтобы сменить знак.</p><div class="symbol-slots">${state.cake.digits.map((n,i)=>`<button data-dial="${i}" aria-label="Знак ${i+1}: ${symbols[n]}"><span>${['◆','☾','★'][n]}</span>${symbols[n]}</button>`).join('')}</div><p role="status">${message}</p><button class="primary" data-ui="code-submit">Проверить</button><button class="secondary" data-ui="code-close">Вернуться в комнату</button></section></div>`;screen.querySelector('button').focus();
@@ -93,7 +93,7 @@ function frame(){
  const now=performance.now(),dt=Math.min(.045,(now-last)/1000);last=now;
  if(!paused&&mode==='game'){
   time+=dt;const v=input.sample(dt),camera=world.camera;
-  const locked=rescue.awakening.active&&rescue.awakening.locked||chase.active&&['caught','trusting','falling'].includes(chase.state.phase);
+  const locked=(hall.started&&hall.locked)||rescue.awakening.active&&rescue.awakening.locked||chase.active&&['caught','trusting','falling'].includes(chase.state.phase);
   camera.rotation.y+=locked?0:v.yaw;camera.rotation.x=Math.max(-1.25,Math.min(1.25,camera.rotation.x+(locked?0:v.pitch)));
   const yaw=camera.rotation.y,speed=locked?0:chase.active?chase.speed(v,settings.mobile):2.3;
   const dx=(Math.sin(yaw)*v.forward+Math.cos(yaw)*v.side)*speed*dt,dz=(Math.cos(yaw)*v.forward-Math.sin(yaw)*v.side)*speed*dt;
@@ -105,6 +105,18 @@ function frame(){
    $('#objective').textContent=view.phase==='falling'?'':view.phase==='caught'?'':['pitReturn','pitTalk','choice','trusting'].includes(view.phase)?'НЕ СМЕЙ ПРЫГАТЬ':settings.mobile?'Бегите по коридору. Ускорение включено':'Бегите по коридору · Shift — бег';
    $('#chase-shade').style.background=view.fade>0?`rgba(0,0,0,${Math.min(1,view.fade)})`:`radial-gradient(ellipse,transparent 48%,rgba(100,12,0,${view.near*.35}))`;
    if(view.phase==='lost'||view.phase==='continued')endChase(view.phase);world.scene.render();return;
+  }
+  if(state.zone==='cakeRoom'&&state.cake.finished&&camera.position.z>5.55){state.zone='exitHall';hall.enter();target=null;}
+  if(state.zone==='exitHall'){
+   const view=hall.tick(dt,settings.motion);sound.setListener(camera.position,camera.rotation.y);
+   $('#chapter').textContent='04 / ЗАЛ ВЫХОДА';$('#objective').textContent=hall.objective;
+   $('#chase-shade').style.background='rgba(0,0,0,'+view.fade+')';
+   const hit=world.scene.pickWithRay(camera.getForwardRay(2.55),mesh=>mesh.isPickable&&mesh.isEnabled());
+   target=hall.state.phase==='search'?hit?.pickedMesh?.metadata?.action:null;
+   $('#interaction').hidden=!target;$('#reticle').classList.toggle('active',!!target);
+   if(target){$('#target-label').textContent=targetNames[target];$('#action-label').textContent=targetText(target);}
+   if(view.ending){state.endingId=view.ending;mode='ending';dialogue.stop();setPaused(true);$('#hud').hidden=true;screen.hidden=false;screen.innerHTML=hallEndingScreen(view.ending);screen.querySelector('button').focus();}
+   world.scene.render();return;
   }
   if(state.branch==='rescue'){
    const view=rescue.tick(state,time,dt,settings.motion);state=view.state;if(view.changed){input.clear();target=null;updateHud();}
@@ -165,10 +177,10 @@ document.addEventListener('keydown',e=>{
 window.addEventListener('resize',()=>world?.engine.resize());
 try{
  world=createWorld(canvas,settings.quality);world.reset();chase=new Chase(world,sound);input=new Input(canvas,interact,pause,()=>settings.sensitivity,()=>chase.requestJump());input.bindJoystick($('#joystick'),$('#joystick-knob'));
- dialogue=new Dialogue(sound,world.verity,showSubtitle);await dialogue.init();chase.dialogue=dialogue;rescue=new Rescue(world,sound,dialogue);
+ dialogue=new Dialogue(sound,world.verity,showSubtitle);await dialogue.init();chase.dialogue=dialogue;rescue=new Rescue(world,sound,dialogue);hall=new ExitHall(world,sound,dialogue,$('#hall-phone'));
  // Safari suspends animation frames for occluded windows. Draw a ready first frame explicitly.
  await world.scene.whenReadyAsync();world.engine.resize();world.scene.render();
  if(qa)window.__qaScene=()=>world.scene;
- if(qa)window.__qa07=()=>({position:world.camera.position.asArray(),rotation:world.camera.rotation.asArray(),target,state,phase:rescue.awakening.state.phase,paused,mode,voice:!!dialogue.source,voiceRms:sound.voiceLevel(),meshes:world.scene.meshes.length,lights:world.scene.lights.filter(l=>l.isEnabled()).length});
+ if(qa)window.__qa07=()=>({position:world.camera.position.asArray(),rotation:world.camera.rotation.asArray(),target,state,hall:hall.state,phase:rescue.awakening.state.phase,paused,mode,voice:!!dialogue.source,voiceRms:sound.voiceLevel(),meshes:world.scene.meshes.length,lights:world.scene.lights.filter(l=>l.isEnabled()).length});
  save();$('#loading').remove();menu();world.engine.runRenderLoop(frame);
 }catch(error){$('#loading')?.remove();screen.innerHTML='<main class="error-screen"><h1>Не удалось запустить 3D</h1><p>Нужен браузер с поддержкой WebGL. Попробуйте включить аппаратное ускорение и обновить страницу.</p><pre></pre></main>';screen.querySelector('pre').textContent=error.message;console.error(error);}

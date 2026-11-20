@@ -1,3 +1,4 @@
+import {buildExitHall} from './exit-hall.js';
 import {createRescueRoom} from './rescue-room.js';
 import {createChaseRoom} from './chase-room.js';
 import '@babylonjs/core/Culling/ray.js';
@@ -177,9 +178,14 @@ export function createWorld(canvas,quality='medium'){
  const introMeshes=scene.meshes.filter(mesh=>!mesh.isDescendantOf(verity.root));
  const cakeRoom=createCakeRoom(scene,m),chaseRoom=createChaseRoom(scene,m);let inCake=false,inChase=false,inRescue=false,isMorning=false,rescueOpened=-1;
  const rescueRoom=createRescueRoom(scene,m,introMeshes.filter(a=>a.position.z<5));
+ let hall=null,inHall=false;
  const nightWindow=m.window.emissiveColor.clone();
  function restoreMorning(){isMorning=false;ambient.diffuse.set(.72,.76,.65);moon.diffuse.set(.34,.51,.68);moon.intensity=4.2;m.window.emissiveColor.copyFrom(nightWindow);scene.imageProcessingConfiguration.exposure=1.18;}
- return {engine,scene,camera,get obstacles(){return inRescue?rescueRoom.obstacles:rescueOpened>=0?[...obstacles,...rescueRoom.obstacles]:inChase?chaseRoom.obstacles:inCake?cakeRoom.obstacles:obstacles;},verity,targets,m,qualitySetting,
+ return {engine,scene,camera,get hall(){return hall;},
+ prepareHall(){hall??=buildExitHall(scene,m,introMeshes,verity,lidPivot);hall.show();},
+ enterHall(){inCake=false;inHall=true;cakeRoom.enable(false);ambient.intensity=.63;scene.imageProcessingConfiguration.exposure=1.05;scene.fogDensity=.005;},
+ loopBedroom(){this.reset();lidPivot.rotation.x=1.85;lamp.intensity=2.5;moon.setEnabled(true);lamp.setEnabled(true);camera.position.set(0,1.65,-2.1);camera.rotation.set(.39,0,0);},
+ get obstacles(){return inHall?hall.obstacles:inRescue?rescueRoom.obstacles:rescueOpened>=0?[...obstacles,...rescueRoom.obstacles]:inChase?chaseRoom.obstacles:inCake?cakeRoom.obstacles:obstacles;},verity,targets,m,qualitySetting,
  rescueRoom,
  openRescue(t){rescueOpened=t;rescueRoom.open(t);rescueRoom.capture();},
  enterRescue(){inRescue=true;introMeshes.forEach(a=>a.setEnabled(false));lamps.forEach(l=>l.setEnabled(false));ambient.intensity=.38;scene.fogDensity=.015;verity.root.setEnabled(true);verity.root.position.set(2.1,1.55,34.1);},
@@ -189,10 +195,10 @@ export function createWorld(canvas,quality='medium'){
  chaseRoom,enterChase(){inChase=true;inCake=false;cakeRoom.enable(false);introMeshes.forEach(mesh=>mesh.setEnabled(false));lamps.forEach(l=>l.setEnabled(false));scene.fogDensity=.026;ambient.intensity=.48;chaseRoom.enter(camera,verity);},
  cakeRoom,enterCake(){inCake=true;introMeshes.forEach(mesh=>mesh.setEnabled(false));lamps.forEach(l=>l.setEnabled(false));scene.fogDensity=.009;ambient.intensity=.5;cakeRoom.enter(camera,verity);},
  disturb(time){disturbanceUntil=time+1.1;},
- reset(){obstacles.find(o=>o.name==='box-bottom').disabled=false;restoreMorning();inRescue=false;rescueOpened=-1;rescueRoom.enable(false);rescueRoom.reset();rescuePivot.rotation.y=0;rescueBlock.disabled=false;lidPivot.setEnabled(true);inChase=false;chaseRoom.enable(false);inCake=false;cakeRoom.enable(false);introMeshes.forEach(mesh=>mesh.setEnabled(true));scene.fogDensity=.022;ambient.intensity=.24;disturbanceUntil=-1;lightCheck=-1;verity.reset();camera.position.set(0,1.65,-3.3);camera.rotation.set(.13,0,0);boxTime=doorTime=-1;lidPivot.rotation.x=doorPivot.rotation.y=0;doorCollider.disabled=false;Object.assign(doorCollider,{x:0,z:4.5,w:1.8,d:.2});fuse.setEnabled(false);switchMesh.rotation.x=0;switchMesh.material=m.red;drawer.position.x=2.65;handle.position.x=2.55;powered=false;lamp.intensity=1.8;verity.root.setEnabled(false);},
+ reset(){inHall=false;hall?.reset();obstacles.find(o=>o.name==='box-bottom').disabled=false;restoreMorning();inRescue=false;rescueOpened=-1;rescueRoom.enable(false);rescueRoom.reset();rescuePivot.rotation.y=0;rescueBlock.disabled=false;lidPivot.setEnabled(true);inChase=false;chaseRoom.enable(false);inCake=false;cakeRoom.enable(false);introMeshes.forEach(mesh=>mesh.setEnabled(true));scene.fogDensity=.022;ambient.intensity=.24;disturbanceUntil=-1;lightCheck=-1;verity.reset();camera.position.set(0,1.65,-3.3);camera.rotation.set(.13,0,0);boxTime=doorTime=-1;lidPivot.rotation.x=doorPivot.rotation.y=0;doorCollider.disabled=false;Object.assign(doorCollider,{x:0,z:4.5,w:1.8,d:.2});fuse.setEnabled(false);switchMesh.rotation.x=0;switchMesh.material=m.red;drawer.position.x=2.65;handle.position.x=2.55;powered=false;lamp.intensity=1.8;verity.root.setEnabled(false);},
  effect(type,time){if(inCake){cakeRoom.effect(type,time);return;}if(type==='box'){boxTime=time;verity.root.setEnabled(true);verity.root.position.set(0,.5,.4);}if(type==='install')fuse.setEnabled(true);if(type==='power'){powered=true;switchMesh.rotation.x=-.6;switchMesh.material=m.brass;}if(type==='door')doorTime=time;if(type==='drawer'){drawer.position.x-=.15;handle.position.x-=.15;}},
  update(time,dt,flicker=true){
-  if(inChase||inRescue||isMorning)return;
+  if(inChase||inRescue||isMorning||inHall)return;
   if(rescueOpened>=0){if(time-rescueOpened<1.6)rescueRoom.capture();rescuePivot.rotation.y=-Math.min(1,(time-rescueOpened)/1.5)*1.65;if(time-rescueOpened>1.5)rescueBlock.disabled=true;}
   if(inCake)return cakeRoom.update(time,dt,camera,verity,flicker);
   if(boxTime>=0){const t=Math.max(0,Math.min(1,(time-boxTime)/1.3));lidPivot.rotation.x=(1-Math.pow(1-t,3))*1.85+Math.sin(t*Math.PI)*.08;}

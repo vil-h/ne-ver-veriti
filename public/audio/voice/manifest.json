@@ -21,7 +21,17 @@
     "audio/voice/07-doors.ogg": "audio/voice/07-doors.mp3",
     "audio/voice/19-rescue-angry.ogg": "audio/voice/19-rescue-angry.mp3",
     "audio/voice/20-rescue-abandon.ogg": "audio/voice/20-rescue-abandon.mp3",
-    "audio/voice/21-rescue-vent.ogg": "audio/voice/21-rescue-vent.mp3"
+    "audio/voice/21-rescue-vent.ogg": "audio/voice/21-rescue-vent.mp3",
+    "audio/voice/22-hall-welcome.ogg": "audio/voice/22-hall-welcome.mp3",
+    "audio/voice/23-hall-beauty.ogg": "audio/voice/23-hall-beauty.mp3",
+    "audio/voice/24-hall-home.ogg": "audio/voice/24-hall-home.mp3",
+    "audio/voice/25-hall-exit.ogg": "audio/voice/25-hall-exit.mp3",
+    "audio/voice/26-hall-equipment.ogg": "audio/voice/26-hall-equipment.mp3",
+    "audio/voice/27-hall-please.ogg": "audio/voice/27-hall-please.mp3",
+    "audio/voice/28-hall-found.ogg": "audio/voice/28-hall-found.mp3",
+    "audio/voice/29-hall-friends.ogg": "audio/voice/29-hall-friends.mp3",
+    "audio/voice/30-hall-again.ogg": "audio/voice/30-hall-again.mp3",
+    "audio/voice/31-hall-archive.ogg": "audio/voice/31-hall-archive.mp3"
   },
   "recordings": [
     {
@@ -239,6 +249,96 @@
       "rms": 0.0993,
       "peak": 0.677,
       "sha256": "132426013b1ce28d3b0201122178fd41f56977c63fc8cd8baba22c61cfb6f847"
+    },
+    {
+      "file": "audio/voice/22-hall-welcome.mp3",
+      "text": "Ну вот! Я же говорил, что мы справимся. Осталась всего одна дверь — и ты дома!",
+      "emotion": "friendly",
+      "seconds": 6.064,
+      "rms": 0.0857,
+      "peak": 0.6191,
+      "sha256": "d0ee278fe052b0249cfcba420de0c55ae27eaa062e61bc7b0d83a33ed62d081b"
+    },
+    {
+      "file": "audio/voice/23-hall-beauty.mp3",
+      "text": "Посмотри, как здесь красиво!",
+      "emotion": "friendly",
+      "seconds": 2.105,
+      "rms": 0.0877,
+      "peak": 0.6427,
+      "sha256": "60d3803763a4f4e905fcb3a42b20810fd8c542ad4b1134cb154a0976aeb7e9eb"
+    },
+    {
+      "file": "audio/voice/24-hall-home.mp3",
+      "text": "Тебе ведь уже хочется домой?",
+      "emotion": "friendly",
+      "seconds": 2.191,
+      "rms": 0.0919,
+      "peak": 0.6544,
+      "sha256": "2e56f2dfa2f035154281dbd45b5c9e23a6252e9c1b283c8ab04c42caf35bedf9"
+    },
+    {
+      "file": "audio/voice/25-hall-exit.mp3",
+      "text": "Не нужно ничего искать. Выход прямо перед тобой.",
+      "emotion": "friendly",
+      "seconds": 3.959,
+      "rms": 0.0977,
+      "peak": 0.6737,
+      "sha256": "264a63a1085d87318584e84911cea9ec1cfcdfd858ee6a3452caa96176274b0f"
+    },
+    {
+      "file": "audio/voice/26-hall-equipment.mp3",
+      "text": "Зачем ты туда смотришь? Это просто старое оборудование.",
+      "emotion": "suspicious",
+      "seconds": 4.918,
+      "rms": 0.1015,
+      "peak": 0.6739,
+      "sha256": "d364b244fac88db67e908754356a4dc309ee04e56a7187e66b86d93db74c552d"
+    },
+    {
+      "file": "audio/voice/27-hall-please.mp3",
+      "text": "Пожалуйста, не усложняй. Мы ведь почти выбрались.",
+      "emotion": "suspicious",
+      "seconds": 4.213,
+      "rms": 0.0911,
+      "peak": 0.6539,
+      "sha256": "b8ae4cd7f06ff63f39709905b713015687e6ac8e6de02a436206a8d22d44031a"
+    },
+    {
+      "file": "audio/voice/28-hall-found.mp3",
+      "text": "Ты не должен был это находить.",
+      "emotion": "suspicious",
+      "seconds": 2.542,
+      "rms": 0.0905,
+      "peak": 0.6233,
+      "sha256": "b41c10deb749243b675a65a267f5d593c776a8c6d7ae0a2744ab865573cf4033"
+    },
+    {
+      "file": "audio/voice/29-hall-friends.mp3",
+      "text": "Вот и молодец! Я знал, что мы друзья!",
+      "emotion": "friendly",
+      "seconds": 3.294,
+      "rms": 0.0947,
+      "peak": 0.6443,
+      "sha256": "8ec01d625bc91ea8734b76b4d8348975c2b2d9c65d6e175332c792bcab169a92"
+    },
+    {
+      "file": "audio/voice/30-hall-again.mp3",
+      "text": "Ну что, попробуем ещё раз?",
+      "emotion": "suspicious",
+      "seconds": 2.662,
+      "rms": 0.092,
+      "peak": 0.6072,
+      "sha256": "de10c0b6b281c9e253900c650dd9ab76962acb3a3a6f21e62c9d98c73dbef09d"
+    },
+    {
+      "file": "audio/voice/31-hall-archive.mp3",
+      "text": "Привет! Я Верити…",
+      "emotion": "friendly",
+      "seconds": 2.146,
+      "rms": 0.0803,
+      "peak": 0.5963,
+      "sha256": "0fdc6960b28bb8fbe924766e701f784bd1346ec73a68b2cd31ef137cfd8719e2"
     }
   ]
 }

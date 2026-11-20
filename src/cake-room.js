@@ -65,7 +65,7 @@ export function createCakeRoom(scene,m){
  enable(false);
  return {obstacles,buttonPosition:new Vector3(17,1.3,4.12),enable,reset,
  enter(camera,verity){reset();enable(true);camera.position.set(20,1.65,-3.3);camera.rotation.set(.1,0,0);verity.reset();verity.root.setEnabled(true);verity.root.position.set(21.1,1.6,-1.8);},
- effect(type,t){if(type==='collapse'&&broken<0)broken=t;if(type==='unlock'&&opened<0)opened=t;},
+ effect(type,t){if(type==='collapse'&&broken<0)broken=t;if(type==='openHall'&&opened<0){opened=t;frontShell.setEnabled(false);threshold.setEnabled(false);obstacles.find(o=>o.name==='shell-front').disabled=true;}},
  update(t,dt,camera,verity,motion){
   if(opened>=0){const u=Math.min(1,(t-opened)/1.2);doorPivot.rotation.y=-u*1.5;if(u===1)blocker.disabled=true;}
   if(broken>=0){const age=t-broken;light.diffuse.set(1,.035,.015);fill.diffuse.set(.5,.025,.02);light.intensity=motion?1.65+.45*Math.sin(age*7):1.8;fill.intensity=.55;

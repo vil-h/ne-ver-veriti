@@ -16,11 +16,11 @@ export function createVerity(scene){
  const tex=new DynamicTexture('verity-expression',{width:512,height:512},scene,false);tex.hasAlpha=true;
  const mat=new StandardMaterial('expression-ink',scene);mat.diffuseTexture=tex;mat.useAlphaFromDiffuseTexture=true;mat.specularColor=Color3.Black();mat.backFaceCulling=false;face.material=mat;
  const teeth=[];
- let emotion='friendly',talking=false,lastMouth=-1,lastBlink=-1,amplitude=0,transformation=0,smile=0;
+ let emotion='friendly',talking=false,lastMouth=-1,lastBlink=-1,amplitude=0,transformation=0,smile=0,uneasy=false;
  function draw(mouth=0,blink=0){
   const c=tex.getContext();c.clearRect(0,0,512,512);c.fillStyle='#17150f';c.strokeStyle='#17150f';c.lineCap='round';
   for(const x of [158,354]){c.beginPath();c.ellipse(x,219,22,Math.max(3,(emotion==='suspicious'?31:45)*(1-blink)),emotion==='angry'?(x<200?-.3:.3):0,0,Math.PI*2);c.fill();}
-  c.lineWidth=17;c.beginPath();c.moveTo(160,328);c.bezierCurveTo(215,emotion==='angry'?280:405+mouth*14+smile*22,304,emotion==='angry'?280:405+mouth*14+smile*22,357,322);c.stroke();
+  c.lineWidth=17;c.beginPath();c.moveTo(160,328);c.bezierCurveTo(215,uneasy?328:emotion==='angry'?280:405+mouth*14+smile*22,304,uneasy?328:emotion==='angry'?280:405+mouth*14+smile*22,357,322);c.stroke();
   if(mouth>.1){c.beginPath();c.ellipse(260,366,37,5+mouth*30,0,0,Math.PI*2);c.fill();}
   if(emotion!=='friendly'){c.lineWidth=13;for(const x of [158,354]){c.beginPath();c.moveTo(x-29,153+(emotion==='angry'&&x>200?20:0));c.lineTo(x+29,153+(emotion==='angry'&&x<200?20:0));c.stroke();}}
 
@@ -28,9 +28,10 @@ export function createVerity(scene){
  }
  draw();
  return {root,ball,monster,
+ setUneasy(value){if(uneasy!==value){uneasy=value;draw();}},
  silentSmile(value){const next=Math.round(value*20)/20;if(next!==smile){smile=next;draw();}},
  setGait(value){gait=value;},setAttack(value){attack=value;},
- reset(){smile=0;ball.scaling.setAll(1);face.scaling.setAll(1);face.visibility=1;transformation=0;gait=attack=0;monster.pose(0,0);ball.setEnabled(true);face.setEnabled(true);teeth.forEach(t=>t.setEnabled(false));gold.diffuseColor=Color3.FromHexString('#edb331');emotion='friendly';talking=false;amplitude=0;lastMouth=lastBlink=-1;root.scaling.setAll(1);root.rotation.setAll(0);draw();},
+ reset(){uneasy=false;smile=0;ball.scaling.setAll(1);face.scaling.setAll(1);face.visibility=1;transformation=0;gait=attack=0;monster.pose(0,0);ball.setEnabled(true);face.setEnabled(true);teeth.forEach(t=>t.setEnabled(false));gold.diffuseColor=Color3.FromHexString('#edb331');emotion='friendly';talking=false;amplitude=0;lastMouth=lastBlink=-1;root.scaling.setAll(1);root.rotation.setAll(0);draw();},
  setEmotion(value){emotion=value==='neutral'?'friendly':value;draw();},
  setTalking(value){talking=value;if(!value){amplitude=0;draw();}},
  setAmplitude(value){amplitude=value;},

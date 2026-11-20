@@ -1,6 +1,25 @@
 const voice=(id,text,emotion='friendly')=>({speaker:'Верити',text,emotion,voice:`audio/voice/${id}.ogg`});
 const thought=text=>({speaker:'Вы',text,emotion:'neutral'});
 export const lines={
+ hallWelcome:voice('22-hall-welcome','Ну вот! Я же говорил, что мы справимся. Осталась всего одна дверь — и ты дома!'),
+ hallBeauty:voice('23-hall-beauty','Посмотри, как здесь красиво!'),
+ hallHome:voice('24-hall-home','Тебе ведь уже хочется домой?'),
+ hallExit:voice('25-hall-exit','Не нужно ничего искать. Выход прямо перед тобой.'),
+ hallEquipment:voice('26-hall-equipment','Зачем ты туда смотришь? Это просто старое оборудование.','suspicious'),
+ hallPlease:voice('27-hall-please','Пожалуйста, не усложняй. Мы ведь почти выбрались.','suspicious'),
+ hallFound:voice('28-hall-found','Ты не должен был это находить.','suspicious'),
+ hallFriends:voice('29-hall-friends','Вот и молодец! Я знал, что мы друзья!'),
+ hallAgain:voice('30-hall-again','Ну что, попробуем ещё раз?','suspicious'),
+ hallArchive:{...voice('31-hall-archive','Привет! Я Верити…'),position:[15,1.4,12]},
+ hallClock:thought('03:15. Секундная стрелка стоит. А из динамиков всё ещё слышно тиканье.'),
+ hallBedFeed:thought('Сначала крышка была закрыта. На втором кадре Верити уже выглядывает из коробки. Кто снимал?'),
+ hallCorridor:thought('За дверью «Спасение» видны торцы фанеры. Камера висит там, где я видел стену.'),
+ hallClue:thought('На экране Верити у стекла. Здесь он рядом со мной. За стеной под часами видна лестница. Там двойной шов.'),
+ hallSeam:thought('Под часами стык шире остальных. На стойке наблюдения есть камера с видом снаружи.'),
+ hallLatch:thought('Под кромкой скрытая ручка. Панель можно отодвинуть.'),
+ hallTrust:thought('На стойке у стеклянной двери просят подтвердить доверие проводнику.'),
+ hallEntered:thought('Ветер. Земля пружинит под ногами.'),
+
  rescueAngry:voice('19-rescue-angry','Я же говорил тебе, какую дверь выбрать… Почему ты меня не слушаешь?','angry'),
  rescueAbandon:voice('20-rescue-abandon','Ну хорошо. Раз ты такой самостоятельный — выбирайся сам.','angry'),
  rescueVentVoice:{...voice('21-rescue-vent','Ты всё ещё думаешь, что найдёшь выход?','suspicious'),position:[5.8,2.7,38]},

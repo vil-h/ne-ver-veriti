@@ -6,7 +6,7 @@ export function cakeAct(state,action){
  if(action.startsWith('dial')){const i=Number(action.slice(4));if(Number.isInteger(i)&&i>=0&&i<3&&!s.unlocked)s.digits[i]=(s.digits[i]+1)%3;}
  else if(action==='submit'&&!s.unlocked){if(s.digits.join('')==='102'){s.unlocked=true;line='cakeSolved';effect='unlock';}else{line='cakeWrong';effect='wrong';}}
  else if(action==='redButton'){s.collapsed=true;line='cakeRage';effect='collapse';}
- else if(action==='cakeExit'){if(s.unlocked){s.finished=true;effect='next';}else line='cakeLocked';}
+ else if(action==='cakeExit'){if(s.unlocked){s.finished=true;effect='openHall';line='hallWelcome';}else line='cakeLocked';}
  else if(['treat','partyNote','candleClue','giftClue','starClue','cakeEntry'].includes(action))line=action;
  return {state:s,line,effect};
 }

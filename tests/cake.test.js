@@ -10,7 +10,7 @@ test('Ошибка не блокирует замок, правильная по
  let s=cakeInitial();const wrong=cakeAct(s,'submit');assert.equal(wrong.effect,'wrong');assert.equal(wrong.state.unlocked,false);
  for(const action of ['dial0','dial2','dial2'])s=cakeAct(s,action).state;
  const solved=cakeAct(s,'submit');assert.equal(solved.effect,'unlock');assert.equal(solved.state.unlocked,true);
- assert.equal(cakeAct(solved.state,'cakeExit').effect,'next');assert.equal(cakeAct(cakeInitial(),'cakeExit').effect,null);
+ assert.equal(cakeAct(solved.state,'cakeExit').effect,'openHall');assert.equal(cakeAct(cakeInitial(),'cakeExit').effect,null);
 });
 test('Красная кнопка доступна до и после решения; повторное нажатие не запускает сцену заново',()=>{
  for(const unlocked of [false,true]){const s=cakeAct({...cakeInitial(),unlocked},'redButton');assert.equal(s.effect,'collapse');assert.equal(cakeAct(s.state,'redButton').effect,null);assert.equal(cakeAct(s.state,'cakeExit').effect,null);}
