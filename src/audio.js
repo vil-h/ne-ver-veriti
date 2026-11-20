@@ -23,17 +23,17 @@ export class Sound {
  quietTone(position,level=.025){if(!this.ctx||this.paused)return;const o=this.ctx.createOscillator(),g=this.ctx.createGain(),bus=this.spatial(position,this.effects),t=this.ctx.currentTime;o.type='sine';o.frequency.setValueAtTime(1100,t);o.frequency.exponentialRampToValueAtTime(540,t+.12);g.gain.setValueAtTime(level,t);g.gain.exponentialRampToValueAtTime(.0001,t+.2);o.connect(g);g.connect(bus);o.start();o.stop(t+.22);o.onended=()=>{o.disconnect();g.disconnect();bus.disconnect();};}
  hush(value){this.hushed=value;this.sync(this.settings);}
  async preloadCues(){for(const name of ['transform','attack']){try{this.cues.set(name,await this.loadVoice((import.meta.env?.BASE_URL||'./')+'audio/effects/'+name+'.mp3'));}catch{}}}
- playCue(name){if(!this.ctx||this.paused)return;const buffer=this.cues.get(name);if(!buffer){this.alarm();return;}const source=this.ctx.createBufferSource();source.buffer=buffer;const gain=this.ctx.createGain();gain.gain.value=.65;source.connect(gain);gain.connect(this.effects);this.sources.push(source);source.onended=()=>{source.disconnect();gain.disconnect();this.sources=this.sources.filter(s=>s!==source);};source.start();}
+ playCue(name,position){if(!this.ctx||this.paused)return;const buffer=this.cues.get(name);if(!buffer){this.alarm();return;}const source=this.ctx.createBufferSource();source.buffer=buffer;const gain=this.ctx.createGain();const bus=position?this.spatial(position,this.effects):this.effects;gain.gain.value=name==='attack'?.46:.65;source.connect(gain);gain.connect(bus);this.sources.push(source);source.onended=()=>{source.disconnect();gain.disconnect();if(position)bus.disconnect();this.sources=this.sources.filter(s=>s!==source);};source.start();}
  stopCues(){for(const s of this.sources){try{s.stop();}catch{}}this.sources=[];}
  pause(value){this.paused=value;if(this.ctx){if(value)this.ctx.suspend().catch(()=>{});else this.ctx.resume().catch(()=>{});}}
  setListener(position,yaw){
   if(!this.ctx)return;const l=this.ctx.listener;
-  if(l.positionX){for(const [key,value] of Object.entries({positionX:position.x,positionY:position.y,positionZ:position.z,forwardX:Math.sin(yaw),forwardY:0,forwardZ:Math.cos(yaw),upX:0,upY:1,upZ:0}))l[key].value=value;}
-  else{l.setPosition(position.x,position.y,position.z);l.setOrientation(Math.sin(yaw),0,Math.cos(yaw),0,1,0);}
+  if(l.positionX){for(const [key,value] of Object.entries({positionX:position.x,positionY:position.y,positionZ:-position.z,forwardX:Math.sin(yaw),forwardY:0,forwardZ:-Math.cos(yaw),upX:0,upY:1,upZ:0}))l[key].value=value;}
+  else{l.setPosition(position.x,position.y,-position.z);l.setOrientation(Math.sin(yaw),0,-Math.cos(yaw),0,1,0);}
  }
  spatial(position,bus){
   const p=this.ctx.createPanner();p.panningModel='HRTF';p.distanceModel='inverse';p.refDistance=2;p.maxDistance=35;p.rolloffFactor=1.3;
-  p.positionX.value=position[0];p.positionY.value=position[1];p.positionZ.value=position[2];p.connect(bus);return p;
+  if(p.positionX){p.positionX.value=position[0];p.positionY.value=position[1];p.positionZ.value=-position[2];}else p.setPosition(position[0],position[1],-position[2]);p.connect(bus);return p;
  }
  noiseBurst(duration,level,cutoff,bus,delay=0){
   const ctx=this.ctx,t=ctx.currentTime+delay,source=ctx.createBufferSource(),g=ctx.createGain(),filter=ctx.createBiquadFilter();
@@ -82,7 +82,9 @@ export class Sound {
   }
  }
  alarm(){if(!this.ctx||this.paused)return;this.noiseBurst(.7,.17,1200,this.effects);const o=this.ctx.createOscillator(),g=this.ctx.createGain(),t=this.ctx.currentTime;o.type='sawtooth';o.frequency.setValueAtTime(180,t);o.frequency.linearRampToValueAtTime(53,t+1.8);g.gain.setValueAtTime(.07,t);g.gain.exponentialRampToValueAtTime(.0001,t+2);o.connect(g);g.connect(this.effects);o.start();o.stop(t+2);o.onended=()=>{o.disconnect();g.disconnect();};}
- startChase(){this.stopChase();if(this.ctx){this.chaseAudio=new ChaseAudio(this);this.alarm();}}
+ startChase(){this.stopChase();if(this.ctx){this.chaseAudio=new ChaseAudio(this);}}
+ pitTone(){if(!this.ctx)return;this.ambientEvent('pipe',[80,-3,156]);}
+ fadeHunt(event){this.chaseAudio?.fade(event);}
  stopChase(){this.stopCues();this.chaseAudio?.stop();this.chaseAudio=null;}
  updateChase(time,p,d){this.chaseAudio?.update(time,p,d);}
  fall(){if(this.ctx&&!this.paused)this.noiseBurst(2.3,.25,1600,this.effects);}

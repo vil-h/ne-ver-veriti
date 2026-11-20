@@ -1,19 +1,37 @@
-// Synthesized breathing and a pulsing drone; no voice recording is implied.
+import {ChaseScore} from './chase-music.js';
 export class ChaseAudio {
  constructor(sound){
-  this.sound=sound;this.nodes=[];const c=sound.ctx;if(!c)return;
-  this.panner=sound.spatial([80,1.6,0],sound.effects);this.nodes.push(this.panner);
-  this.breath=c.createBufferSource();this.breath.buffer=sound.noiseBuffer;this.breath.loop=true;this.breath.playbackRate.value=.65;
-  this.filter=c.createBiquadFilter();this.filter.type='bandpass';this.filter.frequency.value=430;this.filter.Q.value=2;
-  this.gain=c.createGain();this.gain.gain.value=0;this.breath.connect(this.filter);this.filter.connect(this.gain);this.gain.connect(this.panner);this.breath.start();this.nodes.push(this.breath,this.filter,this.gain);
-  this.drone=c.createOscillator();this.drone.type='triangle';this.drone.frequency.value=43;this.pulse=c.createGain();this.pulse.gain.value=0;this.drone.connect(this.pulse);this.pulse.connect(sound.ambience);this.drone.start();this.nodes.push(this.drone,this.pulse);
+  this.sound=sound;this.score=new ChaseScore(sound);this.panner=sound.spatial([80,1.5,0],sound.effects);
+  this.step=0;this.nextStep=0;this.nextBreath=1.4;this.lastMode=null;
  }
  update(time,monster,distance){
-  if(!this.panner)return;const c=this.sound.ctx,t=c.currentTime,near=Math.max(0,1-distance/24);
-  this.panner.positionX.value=monster.x;this.panner.positionZ.value=monster.z;
-  this.gain.gain.setTargetAtTime(.16+(.5+.5*Math.sin(time*3.5))*.6,t,.05);
-  this.pulse.gain.setTargetAtTime((.015+near*.09)*(.45+.55*Math.max(0,Math.sin(time*(5+near*5)))),t,.04);
-  this.filter.frequency.setTargetAtTime(380+near*500,t,.1);
+  const p=monster.position,b=this.panner,c=this.sound.ctx,t=c.currentTime,mode=monster.mode;
+  if(b.positionX){b.positionX.value=p.x;b.positionZ.value=-p.z;}else b.setPosition(p.x,1.5,-p.z);
+  this.score.update(monster.stage||1,mode,distance);
+  if(mode==='search'){this.lastMode=mode;return;}
+  if(mode!==this.lastMode&&['return','sprint','lunge'].includes(mode)){
+   this.score.note(b,135,38,.47,.36,'sawtooth');this.nextBreath=time+1;
+  }
+  if(time>=this.nextStep){
+   const left=this.step++%2===0;this.score.note(b,left?104:81,32,left?.17:.22,.58,'sine');
+   if(this.step%4===2)this.score.note(b,820,190,.13,.27,'triangle',t+.055);
+   this.nextStep=time+(monster.burst?.31:.42)+(left?.04:-.025);
+  }else if(time>=this.nextBreath){
+   this.score.note(b,1150,260,.68,.72,'noise');this.nextBreath=time+(distance<9?1.13:1.8);
+  }
+  this.lastMode=mode;
  }
- stop(){for(const n of [this.breath,this.drone]){try{n?.stop();}catch{}}for(const n of this.nodes)n.disconnect();this.nodes=[];}
+ fade(event='pit'){
+  if(this.score.closed||this.tail)return;
+  const endPitch=event==='caught'?29:49;
+  this.score.note(this.score.layers[0],event==='caught'?123:73.4,endPitch,.27,.19,'triangle');
+  const c=this.sound.ctx,t=c.currentTime;
+  for(const g of this.score.layers)g.gain.setTargetAtTime(.0001,t,.07);
+  // An audio-clock tail also pauses with the game and releases itself on retry.
+  const tail=c.createBufferSource();tail.buffer=this.sound.noiseBuffer;
+  const mute=c.createGain();mute.gain.value=0;tail.connect(mute);mute.connect(this.sound.ambience);
+  this.tail=tail;tail.onended=()=>{tail.disconnect();mute.disconnect();this.tail=null;this.stop();};tail.start();tail.stop(t+.36);
+ }
+ stop(){if(this.tail){const n=this.tail;try{n.stop();}catch{}}
+ this.score.stop();this.panner.disconnect();}
 }

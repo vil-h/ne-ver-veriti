@@ -10,9 +10,10 @@ test('Погоня: начальная фора, поимка стоящего �
 });
 test('Полный маршрут: монстр обходит повороты, стены и шкафы, успешный бег занимает 45–75 секунд',()=>{
  resetGates();let player={...spawn},m=createPursuer(),s=chaseInitial(),elapsed=0,index=1,turnPause=0;
+ const racingLine=[spawn,{x:81,z:34},{x:81,z:44},...route.slice(1,5),{x:79,z:112},{x:79,z:120},route.at(-1)];
  while(!atPit(player)&&elapsed<100){const dt=.05;elapsed+=dt;turnPause-=dt;updateGates(player,dt);
-  const goal=route[index],dx=goal.x-player.x,dz=goal.z-player.z,d=Math.hypot(dx,dz);
-  if(d<.08&&index<route.length-1){index++;turnPause=.5;}
+  const goal=racingLine[index],dx=goal.x-player.x,dz=goal.z-player.z,d=Math.hypot(dx,dz);
+  if(d<.08&&index<racingLine.length-1){index++;turnPause=.24;}
   else if(turnPause<=0&&d>.01){const step=Math.min(RUN_SPEED*dt,d);player=movePlayer(player,dx/d*step,dz/d*step,obstacles);}
   advancePursuer(m,player,dt);assert.equal(obstacles.some(b=>overlaps(m.position.x,m.position.z,.8,b)),false);
   s=tickChase(s,{dt,player,monster:m.position});assert.ok(['running','pitReturn'].includes(s.phase),s.phase+' at '+elapsed);

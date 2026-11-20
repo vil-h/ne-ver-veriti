@@ -1,3 +1,4 @@
+import {routeDistance,huntStage,pursuitMode,pursuitSpeed} from './hunt.js';
 import {inCorridor,obstacles,monsterSpawn} from './chase-layout.js';
 import {overlaps,movePlayer} from './physics.js';
 const radius=.82,key=(x,z)=>`${x},${z}`;
@@ -16,10 +17,14 @@ export function findPath(from,to){
 export function createPursuer(){return {position:{...monsterSpawn},path:[],replan:0,age:0};}
 export function advancePursuer(monster,player,dt){
  monster.age+=dt;monster.replan-=dt;
- if(monster.age<3)return monster.position; // Visible head start, including on checkpoint retry.
- if(monster.replan<=0){monster.path=findPath(monster.position,player);monster.replan=.45;}
- const cycle=(monster.age-3)%9;monster.burst=cycle>6.7;
- let budget=(monster.burst?5.85:4.25+.15*Math.sin(monster.age*2.3))*dt;
+ const progress=Math.max(monster.progress||0,routeDistance(player));
+ monster.progress=progress;monster.stage=huntStage(progress);
+ const gap=Math.max(0,routeDistance(player)-routeDistance(monster.position));
+ monster.mode=pursuitMode(monster.stage,progress,gap,monster.age);
+ monster.burst=['lunge','return','sprint','close'].includes(monster.mode);
+ if(monster.replan<=0){monster.path=findPath(monster.position,player);monster.replan=.36;}
+ let budget=pursuitSpeed(monster.mode,gap)*dt;
+ if(monster.age<3)budget=Math.min(budget,Math.max(0,Math.hypot(player.x-monster.position.x,player.z-monster.position.z)-.88));
  while(budget>0){
   const target=monster.path[0]||player,dx=target.x-monster.position.x,dz=target.z-monster.position.z,d=Math.hypot(dx,dz);
   if(d<.035){if(monster.path.length){monster.path.shift();continue;}break;}

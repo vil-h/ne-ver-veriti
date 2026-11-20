@@ -1,3 +1,4 @@
+import {huntTitles} from './hunt.js';
 import {FinalGuide,guideNames} from './final-guide.js';
 import {guideEndings} from './backstage-state.js';
 import {ExitHall} from './exit-hall-controller.js';
@@ -41,17 +42,18 @@ function showSubtitle(data,hasAudio){
  $('#subtitle').dataset.recorded=String(hasAudio);
 }
 function setPaused(value){paused=value;input?.setActive(!value&&mode==='game');sound.pause(value);if(value){last=performance.now();$('#jump-button').hidden=true;$('#trust-button').hidden=true;}}
-function clearChase(){$('#guide-skip').hidden=true;$('#guide-title').hidden=true;chase?.stop();$('#jump-button').hidden=true;$('#trust-button').hidden=true;$('#chase-shade').style.background='transparent';}
-function beginChase(){dialogue.stop();state.zone='chase';mode='game';screen.hidden=true;screen.innerHTML='';$('#hud').hidden=false;setPaused(false);chase.start();input.clear();stepTime=0;target=null;canvas.focus();updateHud();}
+function clearChase(){crackAt=Infinity;$('#guide-skip').hidden=true;$('#guide-title').hidden=true;chase?.stop();$('#jump-button').hidden=true;$('#trust-button').hidden=true;$('#chase-shade').style.background='transparent';}
+let crackAt=Infinity;
+function beginChase(){sound.setAmbienceLevel(1);dialogue.stop();state.zone='chase';mode='game';screen.hidden=true;screen.innerHTML='';$('#hud').hidden=false;setPaused(false);chase.start();input.clear();stepTime=0;target=null;canvas.focus();updateHud();}
 function endChase(phase){clearChase();dialogue.stop();mode='ending';setPaused(true);$('#hud').hidden=true;screen.hidden=false;screen.innerHTML=chaseEnding(phase);screen.querySelector('button').focus();}
 function menu(){
  clearChase();guide?.reset();rescue?.reset();hall?.reset();
  mode='menu';setPaused(true);dialogue?.stop();$('#hud').hidden=true;
- screen.innerHTML=`<main class="menu"><header><span class="eyebrow">ИСТОРИЯ О ДОВЕРИИ</span><span class="build">0.9 / ПОСЛЕДНИЙ ПРОВОДНИК</span></header><div class="menu-copy"><p class="eyebrow">ОДИН ДРУГ. ДВЕ ДВЕРИ.</p><h1>НЕ ВЕРЬ<br><em>ВЕРИТИ!</em></h1><p class="tagline">Он знает выход.<br>По крайней мере, так он говорит.</p><button class="primary" data-ui="start">Начать игру <span>↗</span></button><button class="secondary" data-ui="settings">Настройки</button><p class="warning">△ Тревожная атмосфера, изменения света и звуки.<br>Выберите комфортную громкость.</p></div><footer><span>ОТ ПЕРВОГО ЛИЦА</span><span>МЫШЬ И КЛАВИАТУРА / КАСАНИЕ</span></footer></main>`;
+ screen.innerHTML=`<main class="menu"><header><span class="eyebrow">ИСТОРИЯ О ДОВЕРИИ</span><span class="build">0.10 / ОХОТА ВЕРИТИ</span></header><div class="menu-copy"><p class="eyebrow">ОДИН ДРУГ. ДВЕ ДВЕРИ.</p><h1>НЕ ВЕРЬ<br><em>ВЕРИТИ!</em></h1><p class="tagline">Он знает выход.<br>По крайней мере, так он говорит.</p><button class="primary" data-ui="start">Начать игру <span>↗</span></button><button class="secondary" data-ui="settings">Настройки</button><p class="warning">△ Тревожная атмосфера, изменения света и звуки.<br>Выберите комфортную громкость.</p></div><footer><span>ОТ ПЕРВОГО ЛИЦА</span><span>МЫШЬ И КЛАВИАТУРА / КАСАНИЕ</span></footer></main>`;
  if(qa)screen.querySelector('.menu-copy').insertAdjacentHTML('beforeend','<button data-ui="qa-rescue">QA: спасение</button><button data-ui="qa-wake">QA: пробуждение</button><button data-ui="qa-cake">QA: праздник</button><button data-ui="qa-chase">QA: погоня</button><button data-ui="qa-pit">QA: яма</button>');
  screen.hidden=false;document.body.classList.add('in-menu');
 }
-async function start(){
+async function start(){crackAt=Infinity;
  clearChase();
  guide.reset();hall.reset();rescue.reset();
  setPaused(true);state=initialState();atmosphere.reset();shownZones.clear();time=0;stepTime=0;lastInteract=-1;world.reset();dialogue.stop();mode='game';screen.hidden=true;screen.innerHTML='';$('#hud').hidden=false;document.body.classList.remove('in-menu');save();await sound.start();sound.preloadCues();setPaused(false);last=performance.now();canvas.focus();updateHud();sound.wakeAlarm();dialogue.say('wake');
@@ -77,7 +79,7 @@ function interact(){
  if(target==='codeLock'){if(!state.cake.collapsed){setPaused(true);lockScreen();}return;}
  if(state.zone==='exitHall'){hall.interact(target);return;}
  const result=act(state,target);applyResult(result);
- if(result.line)dialogue.say(result.line);updateHud();
+ if(result.line&&result.effect!=='collapse')dialogue.say(result.line);updateHud();
 
 }
 function applyResult(result){
@@ -85,7 +87,8 @@ function applyResult(result){
  if(state.branch==='rescue'){rescue.apply(result,time);return;}
  if(result.effect==='enterCake'){world.enterCake();atmosphere.reset();atmosphere.next=time+15;target=null;input.clear();}
  else if(result.effect==='openHall'){world.prepareHall();world.effect('openHall',time);sound.effect('door');}
- else if(result.effect){world.effect(result.effect,time);sound.effect(result.effect);if(result.effect==='collapse')sound.playCue('transform');}
+ else if(result.effect==='collapse'){dialogue.stop();world.effect('collapse',time);sound.setAmbienceLevel(0);crackAt=time+.58;}
+ else if(result.effect){world.effect(result.effect,time);sound.effect(result.effect);}
 }
 function lockScreen(message=''){
  screen.hidden=false;screen.innerHTML=`<div class="modal-wrap"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="lock-title"><p class="eyebrow">ЗАМОК НА ДВЕРИ</p><h2 id="lock-title">Три знака</h2><p class="muted">Нажимайте на ячейки, чтобы сменить знак.</p><div class="symbol-slots">${state.cake.digits.map((n,i)=>`<button data-dial="${i}" aria-label="Знак ${i+1}: ${symbols[n]}"><span>${['◆','☾','★'][n]}</span>${symbols[n]}</button>`).join('')}</div><p role="status">${message}</p><button class="primary" data-ui="code-submit">Проверить</button><button class="secondary" data-ui="code-close">Вернуться в комнату</button></section></div>`;screen.querySelector('button').focus();
@@ -95,7 +98,7 @@ function frame(){
  renderedFrames++;
  const now=performance.now(),dt=Math.min(.045,(now-last)/1000);last=now;
  if(!paused&&mode==='game'){
-  time+=dt;const v=input.sample(dt),camera=world.camera;
+  time+=dt;if(time>=crackAt){crackAt=Infinity;sound.playCue('transform');sound.setAmbienceLevel(.13);dialogue.say('cakeRage');}const v=input.sample(dt),camera=world.camera;
   const locked=guide.locked||(hall.started&&hall.locked)||rescue.awakening.active&&rescue.awakening.locked||chase.active&&['caught','trusting','falling'].includes(chase.state.phase);
   camera.rotation.y+=locked?0:v.yaw;camera.rotation.x=Math.max(-1.25,Math.min(1.25,camera.rotation.x+(locked?0:v.pitch)));
   const yaw=camera.rotation.y,speed=locked?0:chase.active?chase.speed(v,settings.mobile):2.3;
@@ -104,7 +107,8 @@ function frame(){
   const bob=settings.motion&&moved>.001?Math.sin(time*11)*.012:0;if(!rescue.awakening.active||!rescue.awakening.locked)camera.position.y=1.65+bob;
   if(moved>.001){stepTime+=dt;if(stepTime>(chase.active&&speed>3?.28:.48)){sound.effect('step',camera.position.z>5?'carpet':'wood');stepTime=0;}}
   if(chase.active){
-   sound.setListener(camera.position,camera.rotation.y);const view=chase.tick(dt,settings.motion);$('#interaction').hidden=true;$('#jump-button').hidden=!view.pit;$('#trust-button').hidden=!view.trust;$('#jump-button').textContent=settings.mobile?'Прыгнуть':'Space · Прыгнуть';
+   sound.setListener(camera.position,camera.rotation.y);const view=chase.tick(dt,settings.motion,settings.quality);$('#interaction').hidden=true;$('#jump-button').hidden=!view.pit;$('#trust-button').hidden=!view.trust;$('#jump-button').textContent=settings.mobile?'Прыгнуть':'Space · Прыгнуть';
+   $('#chapter').textContent=view.phase==='running'?huntTitles[chase.monster.stage]:'04 / ЯМА';
    $('#objective').textContent=view.phase==='falling'?'':view.phase==='caught'?'':['pitReturn','pitTalk','choice','trusting'].includes(view.phase)?'НЕ СМЕЙ ПРЫГАТЬ':settings.mobile?'Бегите по коридору. Ускорение включено':'Бегите по коридору · Shift — бег';
    $('#chase-shade').style.background=view.fade>0?`rgba(0,0,0,${Math.min(1,view.fade)})`:`radial-gradient(ellipse,transparent 48%,rgba(100,12,0,${view.near*.35}))`;
    if(view.phase==='lost')endChase(view.phase);if(view.phase==='continued'){clearChase();dialogue.stop();input.clear();target=null;state.zone='backstage';guide.enter();try{guide.seenSkip=localStorage.getItem('verity-guide-ending-seen')==='1';}catch{}}world.scene.render();return;
@@ -199,6 +203,6 @@ try{
  // Safari suspends animation frames for occluded windows. Draw a ready first frame explicitly.
  await world.scene.whenReadyAsync();world.engine.resize();world.scene.render();
  if(qa)window.__qaScene=()=>world.scene;
- if(qa)window.__qa07=()=>({position:world.camera.position.asArray(),rotation:world.camera.rotation.asArray(),target,state,guide:guide.state,guideBusy:guide.busy||guide.tapeTime>=0,hall:hall.state,phase:rescue.awakening.state.phase,paused,mode,voice:!!dialogue.source,voiceRms:sound.voiceLevel(),meshes:world.scene.meshes.length,lights:world.scene.lights.filter(l=>l.isEnabled()).length});
+ if(qa)window.__qa07=()=>({position:world.camera.position.asArray(),rotation:world.camera.rotation.asArray(),target,state,hunt:chase.active?{phase:chase.state.phase,time:chase.state.elapsed,monster:chase.monster.position,stage:chase.monster.stage,mode:chase.monster.mode,mix:sound.chaseAudio?.score.mix,fps:world.engine.getFps()}:null,guide:guide.state,guideBusy:guide.busy||guide.tapeTime>=0,hall:hall.state,phase:rescue.awakening.state.phase,paused,mode,voice:!!dialogue.source,voiceRms:sound.voiceLevel(),meshes:world.scene.meshes.length,lights:world.scene.lights.filter(l=>l.isEnabled()).length});
  save();$('#loading').remove();menu();world.engine.runRenderLoop(frame);
 }catch(error){$('#loading')?.remove();screen.innerHTML='<main class="error-screen"><h1>Не удалось запустить 3D</h1><p>Нужен браузер с поддержкой WebGL. Попробуйте включить аппаратное ускорение и обновить страницу.</p><pre></pre></main>';screen.querySelector('pre').textContent=error.message;console.error(error);}

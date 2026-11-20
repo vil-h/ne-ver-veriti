@@ -17,10 +17,10 @@ for(const p of cells.values())for(const [dx,dz] of [[4,0],[-4,0],[0,4],[0,-4]]){
 }
 export const crates=[{name:'service-cabinet',x:81.35,z:24,w:.9,d:2.5},{name:'fallen-duct',x:94,z:46.65,w:2.4,d:.9},{name:'service-cabinet',x:110.65,z:76,w:.9,d:2.5},{name:'fallen-duct',x:96,z:101.35,w:2.4,d:.9},{name:'service-cabinet',x:81.35,z:128,w:.9,d:2.5}];
 export const edge={name:'pit-edge',x:80,z:154,w:4.2,d:.1};
-export const gates=[{name:'pressure-shutter',x:80,z:40,w:3.8,d:.22,disabled:true,triggered:false,timer:0},{name:'pressure-shutter',x:80,z:116,w:3.8,d:.22,disabled:true,triggered:false,timer:0}];
+export const gates=[{name:'pressure-shutter',x:79.16,z:40,w:2.18,d:.22,disabled:true,triggered:false,timer:0},{name:'pressure-shutter',x:80.84,z:116,w:2.18,d:.22,disabled:true,triggered:false,timer:0}];
 export function resetGates(){for(const g of gates){g.disabled=true;g.triggered=false;g.timer=0;}}
 export function updateGates(player,dt){for(const g of gates){
- if(!g.triggered&&Math.abs(player.x-g.x)<2&&g.z-player.z>3&&g.z-player.z<7){g.triggered=true;g.timer=1.65;g.disabled=false;}
+ if(!g.triggered&&Math.abs(player.x-80)<2&&g.z-player.z>3&&g.z-player.z<7){g.triggered=true;g.timer=2.7;g.disabled=false;}
  if(g.timer>0){g.timer=Math.max(0,g.timer-dt);if(g.timer===0)g.disabled=true;}
 }}
 export const obstacles=[...walls,...crates,edge,...gates];
