@@ -108,7 +108,7 @@ function frame(){
   if(moved>.001){stepTime+=dt;if(stepTime>(chase.active&&speed>3?.28:.48)){sound.effect('step',camera.position.z>5?'carpet':'wood');stepTime=0;}}
   if(chase.active){
    sound.setListener(camera.position,camera.rotation.y);const view=chase.tick(dt,settings.motion,settings.quality);$('#interaction').hidden=true;$('#jump-button').hidden=!view.pit;$('#trust-button').hidden=!view.trust;$('#jump-button').textContent=settings.mobile?'Прыгнуть':'Space · Прыгнуть';
-   $('#chapter').textContent=view.phase==='running'?huntTitles[chase.monster.stage]:'04 / ЯМА';
+   $('#chapter').textContent=view.phase==='running'?huntTitles[chase.monster.stage]:view.phase==='caught'||view.phase==='lost'?'04 / ПОГОНЯ':'04 / ЯМА';
    $('#objective').textContent=view.phase==='falling'?'':view.phase==='caught'?'':['pitReturn','pitTalk','choice','trusting'].includes(view.phase)?'НЕ СМЕЙ ПРЫГАТЬ':settings.mobile?'Бегите по коридору. Ускорение включено':'Бегите по коридору · Shift — бег';
    $('#chase-shade').style.background=view.fade>0?`rgba(0,0,0,${Math.min(1,view.fade)})`:`radial-gradient(ellipse,transparent 48%,rgba(100,12,0,${view.near*.35}))`;
    if(view.phase==='lost')endChase(view.phase);if(view.phase==='continued'){clearChase();dialogue.stop();input.clear();target=null;state.zone='backstage';guide.enter();try{guide.seenSkip=localStorage.getItem('verity-guide-ending-seen')==='1';}catch{}}world.scene.render();return;

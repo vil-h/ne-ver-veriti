@@ -1,3 +1,4 @@
+import {movePlayer} from './physics.js';
 import {MeshBuilder} from '@babylonjs/core/Meshes/meshBuilder.js';
 import {Mesh} from '@babylonjs/core/Meshes/mesh.js';
 import {TransformNode} from '@babylonjs/core/Meshes/transformNode.js';
@@ -76,10 +77,11 @@ export function createChaseRoom(scene,m){
  const armShadow=[0,1].map(i=>box('passing-arm-shadow',113.87,1.8,66,.018,.12-i*.04,1.5-i*.22,dark));
  const light=new PointLight('chase-local',new Vector3(80,2.6,8),scene);light.diffuse=new Color3(.75,.84,.7);light.range=22;
  const threat=new PointLight('chase-threat',new Vector3(80,2,0),scene);threat.diffuse=new Color3(1,.14,.035);threat.range=15;
+ let attackOrigin=null;
  function enable(v){root.setEnabled(v);light.setEnabled(v);threat.setEnabled(v);}
  enable(false);
  return {obstacles,enable,
- enter(camera,verity){enable(true);camera.fov=1.12;camera.rotation.z=0;for(const {panel} of shutters)panel.position.y=4.7;camera.position.set(spawn.x,1.65,spawn.z);camera.rotation.set(.05,0,0);verity.reset();verity.setTransformation(2);verity.root.setEnabled(true);verity.root.position.set(monsterSpawn.x,1.65,monsterSpawn.z);},
+ enter(camera,verity){attackOrigin=null;enable(true);camera.fov=1.12;camera.rotation.z=0;for(const {panel} of shutters)panel.position.y=4.7;camera.position.set(spawn.x,1.65,spawn.z);camera.rotation.set(.05,0,0);verity.reset();verity.setTransformation(2);verity.root.setEnabled(true);verity.root.position.set(monsterSpawn.x,1.65,monsterSpawn.z);},
  update(t,dt,camera,verity,pursuer,state,motion,quality){
   for(const {g,panel} of shutters)panel.position.y+=((g.disabled?4.7:1.55)-panel.position.y)*Math.min(1,dt*13);
   const phase=state.phase,p=pursuer.position;
@@ -110,9 +112,16 @@ export function createChaseRoom(scene,m){
   if(state.phase==='caught'){
    const u=Math.min(1,state.phaseTime/.38);
    camera.rotation.y=Math.atan2(p.x-camera.position.x,p.z-camera.position.z);
-   camera.rotation.x=-.35+.17*u;camera.rotation.z=motion?.035*Math.sin(u*Math.PI*2)*(1-u):0;
+   if(!attackOrigin)attackOrigin={x:camera.position.x,z:camera.position.z};
+   const recoil=motion?.38*u:0;
+   const eye=movePlayer(attackOrigin,-Math.sin(camera.rotation.y)*recoil,-Math.cos(camera.rotation.y)*recoil,obstacles);
+   camera.position.x=eye.x;camera.position.z=eye.z;
+   camera.rotation.z=motion?.035*Math.sin(u*Math.PI*2)*(1-u):0;
    camera.fov=motion?1.12-.12*Math.sin(u*Math.PI):1.12;
    verity.root.position.y=1.48-.51*u;verity.root.rotation.y=camera.rotation.y;
+   verity.monster.head.computeWorldMatrix(true);
+   const head=verity.monster.head.getAbsolutePosition();
+   camera.rotation.x=-Math.atan2(head.y-camera.position.y-.07,Math.max(.12,Math.hypot(head.x-eye.x,head.z-eye.z)));
 
   }
  }
