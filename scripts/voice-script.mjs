@@ -2,9 +2,9 @@ import {writeFileSync} from 'node:fs';
 import {lines} from '../src/story.js';
 const rows=Object.entries(lines).map(([id,line])=>({id,speaker:line.speaker,text:line.text,emotion:line.emotion,file:line.voice?.replace('.ogg','.mp3')||null}));
 writeFileSync('public/audio/voice/recording-script.json',JSON.stringify({version:'0.9',status:'recorded',lines:rows},null,2)+'\n');
-const text=`# Пакет записи первого эпизода, версия 0.9
+const text=`# Сценарий русской озвучки, версия 0.9
 
-Готовы 55 игровая MP3-запись. Все реплики Верити перечислены ниже; текст совпадает с src/story.js. Мысли героя остаются субтитрами и приведены отдельно для полноты сценария.
+Готовы 55 игровых MP3-записей. Все реплики Верити перечислены ниже; текст совпадает с src/story.js. Мысли героя остаются субтитрами и приведены отдельно для полноты сценария.
 
 Голос: русский, дружелюбный, мультяшный, немного странный; самостоятельная актёрская трактовка без имитации оригинального актёра. Первые пять реплик — искренняя помощь. В коридоре тише, с осторожной паузой после «немного»; у дверей мягкая настойчивость, без злости и рычания.
 

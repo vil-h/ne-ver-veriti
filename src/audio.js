@@ -56,6 +56,31 @@ export class Sound {
   else this.noiseBurst(kind==='pipe'?1.8:1.1,.14,kind==='pipe'?620:2100,bus);
   const cleanup=this.ctx.createBufferSource();cleanup.buffer=this.noiseBuffer;const silent=this.ctx.createGain();silent.gain.value=0;cleanup.connect(silent);silent.connect(this.master);cleanup.start();cleanup.stop(this.ctx.currentTime+2.2);cleanup.onended=()=>{bus.disconnect();cleanup.disconnect();silent.disconnect();};
  }
+ outsideWorld(position){
+  const c=this.ctx;if(!c||this.paused)return;
+  const bus=this.spatial(position,this.effects);
+  this.noiseBurst(1.15,.1,750,bus);
+  for(const [delay,hz] of [[0,1430],[.21,1780]]){
+   const t=c.currentTime+delay,o=c.createOscillator(),g=c.createGain();
+   o.frequency.setValueAtTime(hz,t);o.frequency.exponentialRampToValueAtTime(hz*1.4,t+.11);
+   g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.09,t+.03);g.gain.exponentialRampToValueAtTime(.0001,t+.14);
+   o.connect(g);g.connect(bus);o.start(t);o.stop(t+.16);o.onended=()=>{o.disconnect();g.disconnect();};
+  }
+  const timer=c.createOscillator(),mute=c.createGain();mute.gain.value=0;timer.connect(mute);mute.connect(bus);timer.start();timer.stop(c.currentTime+1.25);
+  timer.onended=()=>{timer.disconnect();mute.disconnect();bus.disconnect();};
+ }
+ wakeAlarm(){
+  if(!this.ctx||this.paused)return;
+  const c=this.ctx,base=c.currentTime;
+  for(let i=0;i<3;i++){
+   const o=c.createOscillator(),g=c.createGain(),t=base+i*.24;
+   o.type='triangle';o.frequency.value=i===1?880:740;
+   g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.052,t+.012);
+   g.gain.exponentialRampToValueAtTime(.0001,t+.16);
+   o.connect(g);g.connect(this.effects);o.start(t);o.stop(t+.18);
+   o.onended=()=>{o.disconnect();g.disconnect();};
+  }
+ }
  alarm(){if(!this.ctx||this.paused)return;this.noiseBurst(.7,.17,1200,this.effects);const o=this.ctx.createOscillator(),g=this.ctx.createGain(),t=this.ctx.currentTime;o.type='sawtooth';o.frequency.setValueAtTime(180,t);o.frequency.linearRampToValueAtTime(53,t+1.8);g.gain.setValueAtTime(.07,t);g.gain.exponentialRampToValueAtTime(.0001,t+2);o.connect(g);g.connect(this.effects);o.start();o.stop(t+2);o.onended=()=>{o.disconnect();g.disconnect();};}
  startChase(){this.stopChase();if(this.ctx){this.chaseAudio=new ChaseAudio(this);this.alarm();}}
  stopChase(){this.stopCues();this.chaseAudio?.stop();this.chaseAudio=null;}

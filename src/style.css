@@ -10,3 +10,5 @@
 
 #hall-phone{position:fixed;bottom:9%;right:8%;z-index:5;background:#e8e9df;color:#17282a;border:8px solid #202827;border-radius:22px;padding:24px 20px 36px;width:min(310px,80vw);box-shadow:0 12px 45px #0007}
 #hall-phone h3{font-size:1rem;margin:.6em 0}#hall-phone p{background:#cbdacd;border-radius:12px;padding:12px}#hall-phone small{letter-spacing:.15em}
+
+#guide-title{position:fixed;inset:44% 0 auto;text-align:center;font-size:clamp(30px,8vw,100px);font-weight:bold;z-index:8;pointer-events:none}#guide-skip{position:fixed;bottom:3%;right:3%;z-index:9;background:#192022;padding:6px 14px}
