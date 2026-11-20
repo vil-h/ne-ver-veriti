@@ -31,7 +31,31 @@
     "audio/voice/28-hall-found.ogg": "audio/voice/28-hall-found.mp3",
     "audio/voice/29-hall-friends.ogg": "audio/voice/29-hall-friends.mp3",
     "audio/voice/30-hall-again.ogg": "audio/voice/30-hall-again.mp3",
-    "audio/voice/31-hall-archive.ogg": "audio/voice/31-hall-archive.mp3"
+    "audio/voice/31-hall-archive.ogg": "audio/voice/31-hall-archive.mp3",
+    "audio/voice/32-guide-greeting.ogg": "audio/voice/32-guide-greeting.mp3",
+    "audio/voice/33-guide-plead.ogg": "audio/voice/33-guide-plead.mp3",
+    "audio/voice/34-guide-rule.ogg": "audio/voice/34-guide-rule.mp3",
+    "audio/voice/35-guide-arrival.ogg": "audio/voice/35-guide-arrival.mp3",
+    "audio/voice/36-guide-jump.ogg": "audio/voice/36-guide-jump.mp3",
+    "audio/voice/37-guide-know.ogg": "audio/voice/37-guide-know.mp3",
+    "audio/voice/38-guide-human.ogg": "audio/voice/38-guide-human.mp3",
+    "audio/voice/39-guide-lied.ogg": "audio/voice/39-guide-lied.mp3",
+    "audio/voice/40-guide-wait.ogg": "audio/voice/40-guide-wait.mp3",
+    "audio/voice/41-guide-waited.ogg": "audio/voice/41-guide-waited.mp3",
+    "audio/voice/42-guide-refused.ogg": "audio/voice/42-guide-refused.mp3",
+    "audio/voice/43-guide-return.ogg": "audio/voice/43-guide-return.mp3",
+    "audio/voice/44-guide-thanks.ogg": "audio/voice/44-guide-thanks.mp3",
+    "audio/voice/45-guide-never.ogg": "audio/voice/45-guide-never.mp3",
+    "audio/voice/46-guide-no.ogg": "audio/voice/46-guide-no.mp3",
+    "audio/voice/47-guide-wrong.ogg": "audio/voice/47-guide-wrong.mp3",
+    "audio/voice/48-guide-match.ogg": "audio/voice/48-guide-match.mp3",
+    "audio/voice/49-guide-assign.ogg": "audio/voice/49-guide-assign.mp3",
+    "audio/voice/50-guide-subject.ogg": "audio/voice/50-guide-subject.mp3",
+    "audio/voice/51-guide-unknown.ogg": "audio/voice/51-guide-unknown.mp3",
+    "audio/voice/52-guide-end.ogg": "audio/voice/52-guide-end.mp3",
+    "audio/voice/53-guide-sorry.ogg": "audio/voice/53-guide-sorry.mp3",
+    "audio/voice/54-guide-guide.ogg": "audio/voice/54-guide-guide.mp3",
+    "audio/voice/55-guide-begin.ogg": "audio/voice/55-guide-begin.mp3"
   },
   "recordings": [
     {
@@ -339,6 +363,222 @@
       "rms": 0.0803,
       "peak": 0.5963,
       "sha256": "0fdc6960b28bb8fbe924766e701f784bd1346ec73a68b2cd31ef137cfd8719e2"
+    },
+    {
+      "file": "audio/voice/32-guide-greeting.mp3",
+      "text": "Привет! Я Верити. Не бойся, я помогу тебе выбраться.",
+      "emotion": "friendly",
+      "seconds": 4.802,
+      "rms": 0.0938,
+      "peak": 0.6798,
+      "sha256": "62dc234ccb74ba0e039e5aa9ec58096ac00efe8469f13764e6a0455bc981a4bf"
+    },
+    {
+      "file": "audio/voice/33-guide-plead.mp3",
+      "text": "Я больше не хочу! Отпустите меня!",
+      "emotion": "suspicious",
+      "seconds": 3.843,
+      "rms": 0.0921,
+      "peak": 0.6894,
+      "sha256": "4885cf5d461bea24e8a5939f87c8d68d5ddca697b4ae7c3d85d712c02342520d"
+    },
+    {
+      "file": "audio/voice/34-guide-rule.mp3",
+      "text": "Проводник не имеет права покидать систему.",
+      "emotion": "system",
+      "seconds": 3.366,
+      "rms": 0.0884,
+      "peak": 0.6728,
+      "sha256": "3463539797c880285545a70d7a7684d082f4c92c9b078da13804dca0ab90d2b1"
+    },
+    {
+      "file": "audio/voice/35-guide-arrival.mp3",
+      "text": "Ты всё-таки добрался сюда…",
+      "emotion": "suspicious",
+      "seconds": 2.398,
+      "rms": 0.0919,
+      "peak": 0.6676,
+      "sha256": "418024a2815e436770d8cf3f843ef9884d099001496194f4be0b25c8603e412e"
+    },
+    {
+      "file": "audio/voice/36-guide-jump.mp3",
+      "text": "Я не хотел, чтобы ты прыгал.",
+      "emotion": "suspicious",
+      "seconds": 2.52,
+      "rms": 0.091,
+      "peak": 0.6512,
+      "sha256": "c6efb1fe539c34092adcf453974a2031c04f9ea805eb188598aa44bef4aa70ec"
+    },
+    {
+      "file": "audio/voice/37-guide-know.mp3",
+      "text": "Потому что я знаю, что здесь происходит.",
+      "emotion": "suspicious",
+      "seconds": 3.062,
+      "rms": 0.0939,
+      "peak": 0.6719,
+      "sha256": "798d4776da0306d8b0bae293d2baa8da4917d50defbc650f0d068e4396b87ad8"
+    },
+    {
+      "file": "audio/voice/38-guide-human.mp3",
+      "text": "Я тоже когда-то проснулся в той спальне.",
+      "emotion": "suspicious",
+      "seconds": 3.16,
+      "rms": 0.0975,
+      "peak": 0.5876,
+      "sha256": "52b3f36a50598bab170eb440e63fdc35f4130eb3ef6b6063e13311f52648a349"
+    },
+    {
+      "file": "audio/voice/39-guide-lied.mp3",
+      "text": "Я знал, куда ведут двери. И всё равно просил мне довериться.",
+      "emotion": "suspicious",
+      "seconds": 5.105,
+      "rms": 0.09,
+      "peak": 0.6688,
+      "sha256": "e97ae757e250efdc8f5327a3db3d8b9511b85838ac3b45235fd6ad6af1020339"
+    },
+    {
+      "file": "audio/voice/40-guide-wait.mp3",
+      "text": "Подожди… Ты же не оставишь меня здесь?",
+      "emotion": "suspicious",
+      "seconds": 2.967,
+      "rms": 0.0899,
+      "peak": 0.6439,
+      "sha256": "bc985ec8368e83b6f8ff9da146523fcc758687dfc5c88ac92b145476fb919d8b"
+    },
+    {
+      "file": "audio/voice/41-guide-waited.mp3",
+      "text": "Я столько времени ждал…",
+      "emotion": "suspicious",
+      "seconds": 2.13,
+      "rms": 0.0833,
+      "peak": 0.6712,
+      "sha256": "4281a075fb32084e15b065874c5b687d926f48167e04ae182395a5b492e353c4"
+    },
+    {
+      "file": "audio/voice/42-guide-refused.mp3",
+      "text": "Испытуемый отказался от назначения.",
+      "emotion": "system",
+      "seconds": 3.111,
+      "rms": 0.096,
+      "peak": 0.6754,
+      "sha256": "05919ae5c125ce319c72af597ca212a249ee1f2800205f500d6463e634b439cc"
+    },
+    {
+      "file": "audio/voice/43-guide-return.mp3",
+      "text": "Возврат в сценарий.",
+      "emotion": "system",
+      "seconds": 1.851,
+      "rms": 0.0684,
+      "peak": 0.6652,
+      "sha256": "2e1ac9fa1b6d70dcc9a627507eedc2e4119fc4ebdf16380d7d22f3b2f9488427"
+    },
+    {
+      "file": "audio/voice/44-guide-thanks.mp3",
+      "text": "Спасибо…",
+      "emotion": "suspicious",
+      "seconds": 1.147,
+      "rms": 0.0815,
+      "peak": 0.6772,
+      "sha256": "e448e778cb77a4b4a078d0f9472114a99e548b512491885402b09cb0c22e6d4e"
+    },
+    {
+      "file": "audio/voice/45-guide-never.mp3",
+      "text": "Я думал, что никогда отсюда не выйду.",
+      "emotion": "suspicious",
+      "seconds": 2.985,
+      "rms": 0.0904,
+      "peak": 0.6439,
+      "sha256": "cd10ec27082e0d610142aabbd14cb4d7d84be1577afba1b31406f232dc4f17e1"
+    },
+    {
+      "file": "audio/voice/46-guide-no.mp3",
+      "text": "Нет…",
+      "emotion": "suspicious",
+      "seconds": 0.936,
+      "rms": 0.0763,
+      "peak": 0.5409,
+      "sha256": "63df1e274562eff94d2954995a0d7aaed1e579b312e0dc1ee7d93494b2e0c157"
+    },
+    {
+      "file": "audio/voice/47-guide-wrong.mp3",
+      "text": "Нет, только не так…",
+      "emotion": "suspicious",
+      "seconds": 1.79,
+      "rms": 0.088,
+      "peak": 0.5536,
+      "sha256": "fc38ff68f35ed5b475f14848c437215ec2288acf1d0e8a8a18bbda27f0131e86"
+    },
+    {
+      "file": "audio/voice/48-guide-match.mp3",
+      "text": "Обнаружен совместимый субъект.",
+      "emotion": "system",
+      "seconds": 2.667,
+      "rms": 0.0578,
+      "peak": 0.668,
+      "sha256": "640409d658a1e9f0a4c3dd3e7df58c23c371c0a00209c1b81f38014d2e75ebe8"
+    },
+    {
+      "file": "audio/voice/49-guide-assign.mp3",
+      "text": "Назначение нового проводника.",
+      "emotion": "system",
+      "seconds": 2.751,
+      "rms": 0.093,
+      "peak": 0.6599,
+      "sha256": "6833573385a7dddeaf7add27bd55c105a3d7f928e340cbd7c63aca96f1c3513b"
+    },
+    {
+      "file": "audio/voice/50-guide-subject.mp3",
+      "text": "Субъект номер сорок семь.",
+      "emotion": "system",
+      "seconds": 2.32,
+      "rms": 0.0824,
+      "peak": 0.659,
+      "sha256": "5d8ce349a77e1c5e86e0b0892958b1483a7ef06b7f9d2196d3dc64f9f9aca89a"
+    },
+    {
+      "file": "audio/voice/51-guide-unknown.mp3",
+      "text": "Я не знал…",
+      "emotion": "suspicious",
+      "seconds": 1.381,
+      "rms": 0.0784,
+      "peak": 0.6665,
+      "sha256": "abbd34fdfb4364026f728ff3adcc629c67e4f3c5bf1257b3ea4d94af985b3e85"
+    },
+    {
+      "file": "audio/voice/52-guide-end.mp3",
+      "text": "Я думал, что если освобожусь, всё закончится.",
+      "emotion": "suspicious",
+      "seconds": 3.613,
+      "rms": 0.0899,
+      "peak": 0.6738,
+      "sha256": "7ccc395a36f938864bbe9843ffb74305e51ef371d027d8f94fd89df877b2e341"
+    },
+    {
+      "file": "audio/voice/53-guide-sorry.mp3",
+      "text": "Прости меня…",
+      "emotion": "suspicious",
+      "seconds": 1.472,
+      "rms": 0.0765,
+      "peak": 0.6742,
+      "sha256": "4764202e4edc4967f01467f12fe14ad593eddf1bed876941f2d4a9db766a8deb"
+    },
+    {
+      "file": "audio/voice/54-guide-guide.mp3",
+      "text": "Проводник номер сорок семь.",
+      "emotion": "system",
+      "seconds": 2.387,
+      "rms": 0.0837,
+      "peak": 0.6231,
+      "sha256": "03c60b598b00d402c496e6e72fc9793ca640c1c7081f2e04b8849d3b484678e3"
+    },
+    {
+      "file": "audio/voice/55-guide-begin.mp3",
+      "text": "Начать сценарий.",
+      "emotion": "system",
+      "seconds": 1.68,
+      "rms": 0.071,
+      "peak": 0.6716,
+      "sha256": "497d16b41b8eaf4d5243d8e69d852f7e8325e9d73370b8814d7ba01cc0dcad29"
     }
   ]
 }
