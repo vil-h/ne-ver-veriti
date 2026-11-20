@@ -25,10 +25,16 @@ def generate(name,text,emotion):
  return {'file':str(target.relative_to(root/'public')),'text':text,'emotion':emotion,'seconds':round(len(samples)/22050,3),'rms':round(float(np.sqrt(np.mean(samples**2))),4),'peak':round(float(np.max(np.abs(samples))),4),'sha256':hashlib.sha256(target.read_bytes()).hexdigest()}
 demos=[('demo-friendly','Привет! Я Верити. Не бойся, я помогу тебе.','friendly'),('demo-suspicious','Там опасно. Ты же мне доверяешь?','suspicious'),('demo-angry','Я же просил тебя не нажимать!','angry')]
 entries=[]
-for row in demos:entries.append(generate(*row));print(entries[-1],flush=True)
-if '--all' in sys.argv:
+if '--new' not in sys.argv:
+ for row in demos:entries.append(generate(*row));print(entries[-1],flush=True)
+if '--all' in sys.argv or '--new' in sys.argv:
  lines=re.findall(r"voice\('([^']+)','([^']+)'(?:,'([^']+)')?\)", (root/'src/story.js').read_text())
- for name,text,emotion in lines:entries.append(generate(name,text,emotion or 'friendly'));print(entries[-1],flush=True)
+ for name,text,emotion in lines:
+  if '--new' in sys.argv and (out/(name+'.mp3')).exists():continue
+  entries.append(generate(name,text,emotion or 'friendly'));print(entries[-1],flush=True)
+ if '--new' in sys.argv:
+  previous=json.loads((out/'manifest.json').read_text())['recordings']
+  entries=previous+entries
  files={'audio/voice/'+Path(e['file']).stem+'.ogg':e['file'] for e in entries if not Path(e['file']).stem.startswith('demo-')}
  (out/'manifest.json').write_text(json.dumps({'generator':'Piper 1.8.0 / ru_RU-denis-medium (rdh CC0 base)','files':files,'recordings':entries},ensure_ascii=False,indent=2))
 (work/'voice-measurements.json').write_text(json.dumps(entries,ensure_ascii=False,indent=2))

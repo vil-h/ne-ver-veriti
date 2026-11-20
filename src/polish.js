@@ -64,6 +64,6 @@ export function polishWorld(scene,m,shadows){
  const moonMat=new StandardMaterial('moon-pool',scene);moonMat.diffuseColor=new Color3(.18,.27,.32);moonMat.emissiveColor=new Color3(.07,.12,.17);moonMat.alpha=.16;moonMat.specularColor=Color3.Black();
  for(let i=0;i<3;i++){const pool=box('window-light-pool',-2.15,.023,-.65+i*.72,3.4,.003,.57,moonMat);pool.rotation.y=-.25;}
  // Batch decorations only; interactable and collidable world meshes remain untouched.
- const groups=new Map();for(const p of pieces){p.isPickable=false;p.receiveShadows=true;const list=groups.get(p.material)||[];list.push(p);groups.set(p.material,list);}
- for(const [mat,list] of groups){const merged=Mesh.MergeMeshes(list,true,true,undefined,false,false);if(merged){merged.name='detail-batch-'+mat.name;merged.material=mat;merged.isPickable=false;merged.receiveShadows=true;if(mat!==moonMat)shadows.addShadowCaster(merged);}}
+ const groups=new Map();for(const p of pieces){p.isPickable=false;p.receiveShadows=true;const key=/cardboard-edge|box-crease|shipping-label|barcode/.test(p.name)?'box-detail-'+p.material.name:p.material;const list=groups.get(key)||[];list.push(p);groups.set(key,list);}
+ for(const [mat,list] of groups){const merged=Mesh.MergeMeshes(list,true,true,undefined,false,false);if(merged){merged.name=typeof mat==='string'?mat:'detail-batch-'+mat.name;merged.material=list[0].material;merged.isPickable=false;merged.receiveShadows=true;if(mat!==moonMat)shadows.addShadowCaster(merged);}}
 }

@@ -1,3 +1,4 @@
+import {createRescueRoom} from './rescue-room.js';
 import {createChaseRoom} from './chase-room.js';
 import '@babylonjs/core/Culling/ray.js';
 import '@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent.js';
@@ -137,8 +138,12 @@ export function createWorld(canvas,quality='medium'){
  box('choice-ceiling',0,3.3,28.5,9,.2,7,m.ceiling);
  for(const x of [-4.5,4.5])box('choice-side',x,1.6,28.5,.2,3.2,7,m.hall,true);
  for(const x of [-3.5,3.5])box('choice-shoulder',x,1.6,25,2,3.2,.2,m.hall,true);
- box('choice-end',0,1.6,32,9,3.2,.2,m.hall,true);
+ box('choice-end-left',-1.65,1.6,32,5.7,3.2,.2,m.hall,true);
+ box('choice-end-right',3.85,1.6,32,1.3,3.2,.2,m.hall,true);
+ box('rescue-lintel',2.1,2.95,32,1.8,.7,.2,m.hall);
+ const rescueBlock={name:'rescue-door',x:2.1,z:32,w:1.8,d:.2};obstacles.push(rescueBlock);
  const beautiful=box('beautiful-door',-2.1,1.25,31.82,1.55,2.5,.12,m.cream,false,'cake');
+ const rescuePivot=new TransformNode('rescue-hinge',scene);rescuePivot.position.set(1.325,0,31.8);
  const steel=box('rescue-door',2.1,1.25,31.8,1.55,2.5,.15,m.metal,false,'rescue');
  for(const [x,mat] of [[-2.1,m.brass],[2.1,m.trim]]){
   for(const dx of [-.86,.86])box('choice-frame',x+dx,1.3,31.75,.13,2.6,.2,mat);
@@ -148,6 +153,7 @@ export function createWorld(canvas,quality='medium'){
  for(const y of [.6,1.7]){box('pretty-panel',-2.1,y,31.735,1.18,.85,.035,m.brass,false,'cake');box('pretty-panel-inset',-2.1,y,31.706,1.08,.75,.035,m.cream,false,'cake');}
  label('СПАСЕНИЕ',2.1,2.07,31.68,1.35,.37,'#394944','#e4dcc2',57);
  for(const [y,a] of [[1.3,.32],[.95,-.38]]){const plank=box('barricade',2.1,y,31.58,1.85,.19,.08,m.lightWood,false,'rescue');plank.rotation.z=a;for(const dx of [-.7,.7]){const nail=cylinder('nail',2.1+dx*Math.cos(a),y+dx*Math.sin(a),31.53,.033,.015,m.black);nail.rotation.x=Math.PI/2;}}
+ for(const a of scene.meshes.filter(a=>a===steel||a.metadata?.action==='rescue'||a.name==='СПАСЕНИЕ'||a.name==='nail')){a.setParent(rescuePivot);}
  box('warm-threshold',-2.1,.035,31.7,1.5,.025,.09,m.bulb);
  const warm=new PointLight('inviting-light',new Vector3(-2.1,2.9,30.7),scene);warm.diffuse=new Color3(1,.7,.32);warm.intensity=8;warm.range=6;
  const cold=new PointLight('cold-light',new Vector3(2.1,2.8,30.7),scene);cold.diffuse=new Color3(.39,.58,.57);cold.intensity=3;cold.range=5;
@@ -169,15 +175,25 @@ export function createWorld(canvas,quality='medium'){
  }
  qualitySetting(quality);
  const introMeshes=scene.meshes.filter(mesh=>!mesh.isDescendantOf(verity.root));
- const cakeRoom=createCakeRoom(scene,m),chaseRoom=createChaseRoom(scene,m);let inCake=false,inChase=false;
- return {engine,scene,camera,get obstacles(){return inChase?chaseRoom.obstacles:inCake?cakeRoom.obstacles:obstacles;},verity,targets,m,qualitySetting,
+ const cakeRoom=createCakeRoom(scene,m),chaseRoom=createChaseRoom(scene,m);let inCake=false,inChase=false,inRescue=false,isMorning=false,rescueOpened=-1;
+ const rescueRoom=createRescueRoom(scene,m,introMeshes.filter(a=>a.position.z<5));
+ const nightWindow=m.window.emissiveColor.clone();
+ function restoreMorning(){isMorning=false;ambient.diffuse.set(.72,.76,.65);moon.diffuse.set(.34,.51,.68);moon.intensity=4.2;m.window.emissiveColor.copyFrom(nightWindow);scene.imageProcessingConfiguration.exposure=1.18;}
+ return {engine,scene,camera,get obstacles(){return inRescue?rescueRoom.obstacles:rescueOpened>=0?[...obstacles,...rescueRoom.obstacles]:inChase?chaseRoom.obstacles:inCake?cakeRoom.obstacles:obstacles;},verity,targets,m,qualitySetting,
+ rescueRoom,
+ openRescue(t){rescueOpened=t;rescueRoom.open(t);rescueRoom.capture();},
+ enterRescue(){inRescue=true;introMeshes.forEach(a=>a.setEnabled(false));lamps.forEach(l=>l.setEnabled(false));ambient.intensity=.38;scene.fogDensity=.015;verity.root.setEnabled(true);verity.root.position.set(2.1,1.55,34.1);},
+ morning(){inRescue=false;rescueOpened=-1;rescueRoom.enable(false);inCake=inChase=false;cakeRoom.enable(false);chaseRoom.enable(false);introMeshes.forEach(a=>a.setEnabled(a.position.z<5));lamps.forEach(l=>l.setEnabled(false));isMorning=true;scene.fogDensity=.001;ambient.intensity=.85;ambient.diffuse.set(.96,.94,.84);moon.setEnabled(true);moon.diffuse.set(1,.91,.72);moon.intensity=7;m.window.emissiveColor.set(.9,.93,.86);scene.imageProcessingConfiguration.exposure=1.35;
+ for(const a of introMeshes)if(a.name.startsWith('box-')||a.name.startsWith('box-detail-'))a.setEnabled(false);lidPivot.setEnabled(false);obstacles.find(o=>o.name==='box-bottom').disabled=true;
+ doorPivot.rotation.y=0;Object.assign(doorCollider,{x:0,z:4.5,w:1.8,d:.2,disabled:false});camera.position.set(-1.32,1.05,-2.85);camera.rotation.set(.05,.7,0);verity.reset();verity.root.setEnabled(true);verity.root.position.set(-2.8,1.1,-1.9);verity.root.scaling.setAll(.65);verity.root.rotation.y=-2.3;},
  chaseRoom,enterChase(){inChase=true;inCake=false;cakeRoom.enable(false);introMeshes.forEach(mesh=>mesh.setEnabled(false));lamps.forEach(l=>l.setEnabled(false));scene.fogDensity=.026;ambient.intensity=.48;chaseRoom.enter(camera,verity);},
  cakeRoom,enterCake(){inCake=true;introMeshes.forEach(mesh=>mesh.setEnabled(false));lamps.forEach(l=>l.setEnabled(false));scene.fogDensity=.009;ambient.intensity=.5;cakeRoom.enter(camera,verity);},
  disturb(time){disturbanceUntil=time+1.1;},
- reset(){inChase=false;chaseRoom.enable(false);inCake=false;cakeRoom.enable(false);introMeshes.forEach(mesh=>mesh.setEnabled(true));scene.fogDensity=.022;ambient.intensity=.24;disturbanceUntil=-1;lightCheck=-1;verity.reset();camera.position.set(0,1.65,-3.3);camera.rotation.set(.13,0,0);boxTime=doorTime=-1;lidPivot.rotation.x=doorPivot.rotation.y=0;doorCollider.disabled=false;Object.assign(doorCollider,{x:0,z:4.5,w:1.8,d:.2});fuse.setEnabled(false);switchMesh.rotation.x=0;switchMesh.material=m.red;drawer.position.x=2.65;handle.position.x=2.55;powered=false;lamp.intensity=1.8;verity.root.setEnabled(false);},
+ reset(){obstacles.find(o=>o.name==='box-bottom').disabled=false;restoreMorning();inRescue=false;rescueOpened=-1;rescueRoom.enable(false);rescueRoom.reset();rescuePivot.rotation.y=0;rescueBlock.disabled=false;lidPivot.setEnabled(true);inChase=false;chaseRoom.enable(false);inCake=false;cakeRoom.enable(false);introMeshes.forEach(mesh=>mesh.setEnabled(true));scene.fogDensity=.022;ambient.intensity=.24;disturbanceUntil=-1;lightCheck=-1;verity.reset();camera.position.set(0,1.65,-3.3);camera.rotation.set(.13,0,0);boxTime=doorTime=-1;lidPivot.rotation.x=doorPivot.rotation.y=0;doorCollider.disabled=false;Object.assign(doorCollider,{x:0,z:4.5,w:1.8,d:.2});fuse.setEnabled(false);switchMesh.rotation.x=0;switchMesh.material=m.red;drawer.position.x=2.65;handle.position.x=2.55;powered=false;lamp.intensity=1.8;verity.root.setEnabled(false);},
  effect(type,time){if(inCake){cakeRoom.effect(type,time);return;}if(type==='box'){boxTime=time;verity.root.setEnabled(true);verity.root.position.set(0,.5,.4);}if(type==='install')fuse.setEnabled(true);if(type==='power'){powered=true;switchMesh.rotation.x=-.6;switchMesh.material=m.brass;}if(type==='door')doorTime=time;if(type==='drawer'){drawer.position.x-=.15;handle.position.x-=.15;}},
  update(time,dt,flicker=true){
-  if(inChase)return;
+  if(inChase||inRescue||isMorning)return;
+  if(rescueOpened>=0){if(time-rescueOpened<1.6)rescueRoom.capture();rescuePivot.rotation.y=-Math.min(1,(time-rescueOpened)/1.5)*1.65;if(time-rescueOpened>1.5)rescueBlock.disabled=true;}
   if(inCake)return cakeRoom.update(time,dt,camera,verity,flicker);
   if(boxTime>=0){const t=Math.max(0,Math.min(1,(time-boxTime)/1.3));lidPivot.rotation.x=(1-Math.pow(1-t,3))*1.85+Math.sin(t*Math.PI)*.08;}
   if(doorTime>=0){doorPivot.rotation.y=Math.min(1,(time-doorTime)/1.2)*-1.65;if(time-doorTime>1.2){doorCollider.x=-.93;doorCollider.z=5.35;doorCollider.w=.18;doorCollider.d=1.72;}}

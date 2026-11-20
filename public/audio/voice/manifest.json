@@ -18,7 +18,10 @@
     "audio/voice/04-switch.ogg": "audio/voice/04-switch.mp3",
     "audio/voice/05-light.ogg": "audio/voice/05-light.mp3",
     "audio/voice/06-corridor.ogg": "audio/voice/06-corridor.mp3",
-    "audio/voice/07-doors.ogg": "audio/voice/07-doors.mp3"
+    "audio/voice/07-doors.ogg": "audio/voice/07-doors.mp3",
+    "audio/voice/19-rescue-angry.ogg": "audio/voice/19-rescue-angry.mp3",
+    "audio/voice/20-rescue-abandon.ogg": "audio/voice/20-rescue-abandon.mp3",
+    "audio/voice/21-rescue-vent.ogg": "audio/voice/21-rescue-vent.mp3"
   },
   "recordings": [
     {
@@ -209,6 +212,33 @@
       "rms": 0.0902,
       "peak": 0.6791,
       "sha256": "87fa1eac348d1b7f2f8c8139aa4cf91e50f73f93decfab65f107c81c2a421006"
+    },
+    {
+      "file": "audio/voice/19-rescue-angry.mp3",
+      "text": "Я же говорил тебе, какую дверь выбрать… Почему ты меня не слушаешь?",
+      "emotion": "angry",
+      "seconds": 3.76,
+      "rms": 0.0939,
+      "peak": 0.4553,
+      "sha256": "58c862db3e9a25934369e16085908338952b433b00f85d0f395aedc23b4ce795"
+    },
+    {
+      "file": "audio/voice/20-rescue-abandon.mp3",
+      "text": "Ну хорошо. Раз ты такой самостоятельный — выбирайся сам.",
+      "emotion": "angry",
+      "seconds": 4.027,
+      "rms": 0.0938,
+      "peak": 0.5061,
+      "sha256": "4ebec9b448bea08f60ebfb1308857182f85c66d2dab52316069dd21fb623027a"
+    },
+    {
+      "file": "audio/voice/21-rescue-vent.mp3",
+      "text": "Ты всё ещё думаешь, что найдёшь выход?",
+      "emotion": "suspicious",
+      "seconds": 3.032,
+      "rms": 0.0993,
+      "peak": 0.677,
+      "sha256": "132426013b1ce28d3b0201122178fd41f56977c63fc8cd8baba22c61cfb6f847"
     }
   ]
 }

@@ -1,6 +1,22 @@
 const voice=(id,text,emotion='friendly')=>({speaker:'Верити',text,emotion,voice:`audio/voice/${id}.ogg`});
 const thought=text=>({speaker:'Вы',text,emotion:'neutral'});
 export const lines={
+ rescueAngry:voice('19-rescue-angry','Я же говорил тебе, какую дверь выбрать… Почему ты меня не слушаешь?','angry'),
+ rescueAbandon:voice('20-rescue-abandon','Ну хорошо. Раз ты такой самостоятельный — выбирайся сам.','angry'),
+ rescueVentVoice:{...voice('21-rescue-vent','Ты всё ещё думаешь, что найдёшь выход?','suspicious'),position:[5.8,2.7,38]},
+ rescueManual:thought('Аварийный запуск: 1. На щитке отключить повреждённую цепь А. 2. Подать резерв Б. 3. На пульте отключить вентиляцию — резерв не выдержит две нагрузки. 4. Подать питание на замок. После щелчка открыть дверь вручную.'),
+ rescueMonitor:thought('Это моя спальня. Даже коробка на месте… Кто поставил там камеру? На соседнем экране за этой стеной — ещё одна дверь.'),
+ rescueIsolated:thought('Цепь А отключена. Теперь можно подать резерв Б.'),
+ rescueFault:thought('Цепь А снова подключена. Защита сбросила резерв. На щитке написано: «А — повреждение изоляции».'),
+ rescueInterlock:thought('Защита не даёт включить резерв. Сначала отключить повреждённую цепь А.'),
+ rescueReserve:thought('Резерв Б работает. Осталось перераспределить нагрузку на пульте.'),
+ rescueVentOff:thought('Вентиляция отключена. Резерв теперь может питать замок.'),
+ rescueVentOn:thought('Вентиляция подключена к резервной линии.'),
+ rescueNoPower:thought('АВАРИЙНОЕ ОТПИРАНИЕ. НЕТ ПИТАНИЯ. Инструкция на терминале рядом с мониторами.'),
+ rescueLoad:thought('Перегрузка. Резерв выдерживает только одну нагрузку. Нужно отключить вентиляцию на пульте.'),
+ rescueReady:thought('АВАРИЙНЫЙ ВЫХОД РАЗБЛОКИРОВАН'),
+ rescueSealed:thought('Дверь захлопнулась. С этой стороны нет ручки.'),
+ falseWake:thought('Это был просто сон…'),
  pitStop:voice('15-pit-stop','Стой… Не надо прыгать.'),
  pitDanger:voice('16-pit-danger','Там опасно. Ты же мне доверяешь?','suspicious'),
  pitPlease:voice('17-pit-please','Пожалуйста… Доверься мне.'),

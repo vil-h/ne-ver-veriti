@@ -14,7 +14,7 @@ export class Dialogue {
    let buffer=this.bufferCache.get(url);if(!buffer){buffer=await this.sound.loadVoice(url);if(buffer)this.bufferCache.set(url,buffer);}
    if(token!==this.token||!buffer)return;
    this.remaining=Infinity;this.show(data,true);this.verity.setTalking(true);
-   this.source=this.sound.playVoice(buffer,data.emotion,()=>{if(token===this.token){this.verity.setTalking(false);this.remaining=1;this.source=null;}});
+   this.source=this.sound.playVoice(buffer,data.emotion,()=>{if(token===this.token){this.verity.setTalking(false);this.remaining=1;this.source=null;}},data.position);
    if(!this.source){this.remaining=Math.max(5,data.text.length/12);this.verity.setTalking(false);this.show(data,false);}
   }catch{if(token===this.token){this.remaining=Math.max(5,data.text.length/12);this.verity.setTalking(false);this.show(data,false);}}
  }

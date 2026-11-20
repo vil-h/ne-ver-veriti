@@ -18,7 +18,9 @@ export class Sound {
    this.paused=false;this.sync(this.settings);await this.ctx.resume();
   }catch{/* Unsupported audio must not prevent play. */}
  }
- sync(settings){this.settings=settings;if(!this.ctx)return;const t=this.ctx.currentTime;this.master.gain.setTargetAtTime(settings.master?1:0,t,.07);for(const name of ['ambience','effects'])this[name].gain.setTargetAtTime(settings[name]*(this.hushed?.08:1),t,.07);this.voiceGain.gain.setTargetAtTime(settings.voice,t,.07);}
+ sync(settings){this.settings=settings;if(!this.ctx)return;const t=this.ctx.currentTime;this.master.gain.setTargetAtTime(settings.master?1:0,t,.07);for(const name of ['ambience','effects'])this[name].gain.setTargetAtTime(settings[name]*(this.hushed?.08:1)*(name==='ambience'?(this.ambienceLevel??1):1),t,.07);this.voiceGain.gain.setTargetAtTime(settings.voice,t,.07);}
+ setAmbienceLevel(value){this.ambienceLevel=value;this.sync(this.settings);}
+ quietTone(position,level=.025){if(!this.ctx||this.paused)return;const o=this.ctx.createOscillator(),g=this.ctx.createGain(),bus=this.spatial(position,this.effects),t=this.ctx.currentTime;o.type='sine';o.frequency.setValueAtTime(1100,t);o.frequency.exponentialRampToValueAtTime(540,t+.12);g.gain.setValueAtTime(level,t);g.gain.exponentialRampToValueAtTime(.0001,t+.2);o.connect(g);g.connect(bus);o.start();o.stop(t+.22);o.onended=()=>{o.disconnect();g.disconnect();bus.disconnect();};}
  hush(value){this.hushed=value;this.sync(this.settings);}
  async preloadCues(){for(const name of ['transform','attack']){try{this.cues.set(name,await this.loadVoice((import.meta.env?.BASE_URL||'./')+'audio/effects/'+name+'.mp3'));}catch{}}}
  playCue(name){if(!this.ctx||this.paused)return;const buffer=this.cues.get(name);if(!buffer){this.alarm();return;}const source=this.ctx.createBufferSource();source.buffer=buffer;const gain=this.ctx.createGain();gain.gain.value=.65;source.connect(gain);gain.connect(this.effects);this.sources.push(source);source.onended=()=>{source.disconnect();gain.disconnect();this.sources=this.sources.filter(s=>s!==source);};source.start();}
@@ -61,9 +63,9 @@ export class Sound {
  fall(){if(this.ctx&&!this.paused)this.noiseBurst(2.3,.25,1600,this.effects);}
  voiceLevel(){if(!this.voiceAnalyser)return 0;this.voiceAnalyser.getByteTimeDomainData(this.voiceSamples);let sum=0;for(const v of this.voiceSamples)sum+=((v-128)/128)**2;return Math.sqrt(sum/this.voiceSamples.length);}
  async loadVoice(url){if(!this.ctx)return null;const response=await fetch(url);if(!response.ok)throw new Error(`Нет аудиофайла: ${url}`);return this.ctx.decodeAudioData(await response.arrayBuffer());}
- playVoice(buffer,emotion,onend){
+ playVoice(buffer,emotion,onend,position=null){
   if(!this.ctx||!buffer)return null;
   const source=this.ctx.createBufferSource();source.buffer=buffer;
-  source.connect(this.voiceGain);source.onended=()=>{source.disconnect();onend?.();};source.start();return source;
+  const bus=position?this.spatial(position,this.voiceGain):this.voiceGain;source.connect(bus);source.onended=()=>{source.disconnect();if(position)bus.disconnect();onend?.();};source.start();return source;
  }
 }

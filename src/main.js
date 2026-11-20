@@ -1,3 +1,4 @@
+import {Rescue,rescueTargets,rescueEnding} from './rescue.js';
 import './style.css';
 import {Chase,chaseEnding} from './chase.js';
 import {symbols,cakeProximity} from './cake-state.js';
@@ -15,7 +16,7 @@ const defaults={master:true,ambience:.35,effects:.5,voice:.8,sensitivity:1,subti
 let settings={...defaults};try{settings={...defaults,...JSON.parse(localStorage.getItem('verity-3d-settings')||'{}')};}catch{}
 for(const k of ['ambience','effects','voice'])settings[k]=Math.max(0,Math.min(1,Number(settings[k])||0));
 settings.sensitivity=Math.max(.25,Math.min(2.5,Number(settings.sensitivity)||1));
-let state=initialState(),mode='menu',paused=true,time=0,last=performance.now(),stepTime=0,target=null,lastInteract=-1,shownZones=new Set(),world,input,dialogue,chase;
+let state=initialState(),mode='menu',paused=true,time=0,last=performance.now(),stepTime=0,target=null,lastInteract=-1,shownZones=new Set(),world,input,dialogue,chase,rescue;
 const sound=new Sound();
 app.innerHTML=`<canvas id="game-canvas" tabindex="0" aria-label="Трёхмерная игра. WASD — движение, мышь или стрелки — обзор, E — взаимодействие."></canvas><div class="vignette" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div><div id="hud" hidden><header class="hud-top"><div><p class="eyebrow" id="chapter">01 / ПРОБУЖДЕНИЕ</p><p class="objective" id="objective"></p></div><button id="pause-button" class="small-button" aria-label="Пауза">Ⅱ <span>Пауза</span></button></header><div id="reticle" aria-hidden="true"></div><div id="interaction"><span id="target-label"></span><button id="interact-button" aria-label="Взаимодействовать"><kbd>E</kbd><span id="action-label">Осмотреть</span></button></div><section id="subtitle" aria-live="polite" hidden><p id="speaker"></p><p id="speech"></p></section><div id="controls-note">WASD — идти <span>·</span> Мышь — обзор <span>·</span> E — действие</div><div id="touch-controls"><div id="joystick" role="group" aria-label="Джойстик перемещения"><div id="joystick-knob"></div></div><div class="swipe-hint">Обзор — свайп<br>по свободной части экрана</div></div></div><button id="jump-button" hidden>Space · Прыгнуть</button><button id="trust-button" hidden>E · Довериться</button><div id="chase-shade" aria-hidden="true"></div><div id="screen"></div><div id="loading"><span class="loading-ring"></span><p>Комната вспоминает вас…</p></div>`;
 const $=s=>document.querySelector(s),canvas=$('#game-canvas'),screen=$('#screen');
@@ -25,7 +26,7 @@ if(new URLSearchParams(location.search).has('diagnostics')){
  const diagnostics=document.createElement('pre');document.addEventListener('keydown',e=>{if(e.code==='F3'){e.preventDefault();diagnostics.hidden=!diagnostics.hidden;}});diagnostics.id='diagnostics';diagnostics.style.cssText='position:fixed;z-index:100;top:90px;left:10px;max-width:95vw;white-space:pre-wrap;background:#000d;color:#bfffbf;padding:12px;font:12px monospace;pointer-events:none';document.body.append(diagnostics);
  window.addEventListener('error',e=>{diagnosticError=e.message;});
  window.addEventListener('unhandledrejection',e=>{diagnosticError=String(e.reason);});
- setInterval(()=>{diagnostics.textContent=JSON.stringify({frames:renderedFrames,mode,paused,visible:document.visibilityState,webgl:world?.engine.webGLVersion,fps:renderedFrames>1?Math.round(world?.engine.getFps()||0):null,ready:world?.scene.isReady(),contextLost:world?.engine.isContextLost,canvas:[canvas.width,canvas.height],position:world?[world.camera.position.x,world.camera.position.z].map(n=>+n.toFixed(2)):null,look:world?[world.camera.rotation.x,world.camera.rotation.y].map(n=>+n.toFixed(2)):null,phase:chase?.active?chase.state.phase:null,monster:chase?.active?[chase.monster.position.x,chase.monster.position.z].map(n=>+n.toFixed(2)):null,voicePlaying:!!dialogue?.source,voiceRms:+(sound.voiceLevel()||0).toFixed(3),error:diagnosticError},null,2);},500);
+ setInterval(()=>{diagnostics.textContent=JSON.stringify({frames:renderedFrames,mode,paused,visible:document.visibilityState,webgl:world?.engine.webGLVersion,fps:renderedFrames>1?Math.round(world?.engine.getFps()||0):null,ready:world?.scene.isReady(),contextLost:world?.engine.isContextLost,canvas:[canvas.width,canvas.height],position:world?[world.camera.position.x,world.camera.position.z].map(n=>+n.toFixed(2)):null,look:world?[world.camera.rotation.x,world.camera.rotation.y].map(n=>+n.toFixed(2)):null,phase:rescue?.awakening.active?rescue.awakening.state.phase:chase?.active?chase.state.phase:null,zone:state.zone,rescue:state.rescue,ending:state.endingId,monster:chase?.active?[chase.monster.position.x,chase.monster.position.z].map(n=>+n.toFixed(2)):null,voicePlaying:!!dialogue?.source,voiceRms:+(sound.voiceLevel()||0).toFixed(3),error:diagnosticError},null,2);},500);
 }
 
 function save(){sound.sync(settings);document.body.classList.toggle('touch',settings.mobile);document.body.classList.toggle('no-motion',!settings.motion);try{localStorage.setItem('verity-3d-settings',JSON.stringify(settings));}catch{}}
@@ -39,14 +40,15 @@ function clearChase(){chase?.stop();$('#jump-button').hidden=true;$('#trust-butt
 function beginChase(){dialogue.stop();state.zone='chase';mode='game';screen.hidden=true;screen.innerHTML='';$('#hud').hidden=false;setPaused(false);chase.start();input.clear();stepTime=0;target=null;canvas.focus();updateHud();}
 function endChase(phase){clearChase();dialogue.stop();mode='ending';setPaused(true);$('#hud').hidden=true;screen.hidden=false;screen.innerHTML=chaseEnding(phase);screen.querySelector('button').focus();}
 function menu(){
- clearChase();
+ clearChase();rescue?.reset();
  mode='menu';setPaused(true);dialogue?.stop();$('#hud').hidden=true;
- screen.innerHTML=`<main class="menu"><header><span class="eyebrow">ИСТОРИЯ О ДОВЕРИИ</span><span class="build">0.6 / ДОВЕРЬСЯ МНЕ</span></header><div class="menu-copy"><p class="eyebrow">ОДИН ДРУГ. ДВЕ ДВЕРИ.</p><h1>НЕ ВЕРЬ<br><em>ВЕРИТИ!</em></h1><p class="tagline">Он знает выход.<br>По крайней мере, так он говорит.</p><button class="primary" data-ui="start">Начать игру <span>↗</span></button><button class="secondary" data-ui="settings">Настройки</button><p class="warning">△ Тревожная атмосфера, изменения света и звуки.<br>Выберите комфортную громкость.</p></div><footer><span>ОТ ПЕРВОГО ЛИЦА</span><span>МЫШЬ И КЛАВИАТУРА / КАСАНИЕ</span></footer></main>`;
- if(qa)screen.querySelector('.menu-copy').insertAdjacentHTML('beforeend','<button data-ui="qa-cake">QA: праздник</button><button data-ui="qa-chase">QA: погоня</button><button data-ui="qa-pit">QA: яма</button>');
+ screen.innerHTML=`<main class="menu"><header><span class="eyebrow">ИСТОРИЯ О ДОВЕРИИ</span><span class="build">0.7 / ТЫ НЕ ПРОСНУЛСЯ</span></header><div class="menu-copy"><p class="eyebrow">ОДИН ДРУГ. ДВЕ ДВЕРИ.</p><h1>НЕ ВЕРЬ<br><em>ВЕРИТИ!</em></h1><p class="tagline">Он знает выход.<br>По крайней мере, так он говорит.</p><button class="primary" data-ui="start">Начать игру <span>↗</span></button><button class="secondary" data-ui="settings">Настройки</button><p class="warning">△ Тревожная атмосфера, изменения света и звуки.<br>Выберите комфортную громкость.</p></div><footer><span>ОТ ПЕРВОГО ЛИЦА</span><span>МЫШЬ И КЛАВИАТУРА / КАСАНИЕ</span></footer></main>`;
+ if(qa)screen.querySelector('.menu-copy').insertAdjacentHTML('beforeend','<button data-ui="qa-rescue">QA: спасение</button><button data-ui="qa-wake">QA: пробуждение</button><button data-ui="qa-cake">QA: праздник</button><button data-ui="qa-chase">QA: погоня</button><button data-ui="qa-pit">QA: яма</button>');
  screen.hidden=false;document.body.classList.add('in-menu');
 }
 async function start(){
  clearChase();
+ rescue.reset();
  setPaused(true);state=initialState();atmosphere.reset();shownZones.clear();time=0;stepTime=0;lastInteract=-1;world.reset();dialogue.stop();mode='game';screen.hidden=true;screen.innerHTML='';$('#hud').hidden=false;document.body.classList.remove('in-menu');save();await sound.start();sound.preloadCues();setPaused(false);last=performance.now();canvas.focus();updateHud();dialogue.say('wake');
 }
 function pause(){if(mode!=='game'||paused)return;setPaused(true);pauseScreen();}
@@ -57,20 +59,23 @@ function settingsScreen(){
  screen.hidden=false;screen.innerHTML=`<div class="modal-wrap"><section class="modal settings" role="dialog" aria-modal="true" aria-labelledby="settings-title"><p class="eyebrow">КОМФОРТ И УПРАВЛЕНИЕ</p><h2 id="settings-title">Настройки</h2><div class="settings-grid"><div>${check('master','Звук')}${range('ambience','Окружение')}${range('effects','Эффекты')}${range('voice','Голос Верити')}<p class="recording-note">${Object.keys(dialogue.manifest.files||{}).length?'Подключены локальные записи голоса.':'Записи голоса пока не добавлены. Реплики доступны в субтитрах.'}</p></div><div>${range('sensitivity','Чувствительность мыши',.25,2.5)}${check('subtitles','Субтитры')}${check('motion','Покачивание и мерцание')}${check('mobile','Сенсорное управление')}<label class="quality-label" for="quality">Качество графики</label><select id="quality" data-setting="quality"><option value="low" ${settings.quality==='low'?'selected':''}>Низкое — для телефона</option><option value="medium" ${settings.quality==='medium'?'selected':''}>Среднее</option><option value="high" ${settings.quality==='high'?'selected':''}>Высокое</option></select></div></div><button class="primary" data-ui="settings-close">Готово <span>↗</span></button></section></div>`;screen.querySelector('input').focus();
 }
 function updateHud(){
- $('#objective').textContent=state.zone==='chase'?(settings.mobile?'Бегите по коридору. Ускорение включено':'Бегите по коридору · Shift — бег'):objective(state);$('#chapter').textContent=state.zone==='chase'?'04 / ПОГОНЯ':state.zone==='cakeRoom'?'03 / ПРАЗДНИК':state.zone==='bedroom'?'01 / ПРОБУЖДЕНИЕ':state.zone==='doors'?'02 / ДВЕ ДВЕРИ':'02 / КОРИДОР';
+ $('#objective').textContent=state.zone==='chase'?(settings.mobile?'Бегите по коридору. Ускорение включено':'Бегите по коридору · Shift — бег'):objective(state);$('#chapter').textContent=state.zone==='falseAwakening'?'05 / УТРО':state.zone==='rescueRoom'?'03 / ТЕХНИЧЕСКИЙ УЗЕЛ':state.zone==='chase'?'04 / ПОГОНЯ':state.zone==='cakeRoom'?'03 / ПРАЗДНИК':state.zone==='bedroom'?'01 / ПРОБУЖДЕНИЕ':state.zone==='doors'?'02 / ДВЕ ДВЕРИ':'02 / КОРИДОР';
 }
-const targetNames={treat:'Торт',partyNote:'Праздничная карточка',candleClue:'Подставка свечей',giftClue:'Подарок',starClue:'Звезда',cakeEntry:'Входная дверь',codeLock:'Символьный замок',redButton:'Красная кнопка',cakeExit:'Дверь с замком',box:'Необычная коробка',drawer:'Ящик письменного стола',panel:'Электрический щиток',exit:'Дверь спальни',cake:'Красивая дверь',rescue:'Дверь «Спасение»',bed:'Кровать',window:'Окно',wardrobe:'Шкаф'};
+const targetNames={...rescueTargets,treat:'Торт',partyNote:'Праздничная карточка',candleClue:'Подставка свечей',giftClue:'Подарок',starClue:'Звезда',cakeEntry:'Входная дверь',codeLock:'Символьный замок',redButton:'Красная кнопка',cakeExit:'Дверь с замком',box:'Необычная коробка',drawer:'Ящик письменного стола',panel:'Электрический щиток',exit:'Дверь спальни',cake:'Красивая дверь',rescue:'Дверь «Спасение»',bed:'Кровать',window:'Окно',wardrobe:'Шкаф'};
 function targetText(action){if(action==='cakeExit')return state.cake.unlocked?'Пройти':'Осмотреть';if(action==='codeLock')return 'Ввести знаки';if(action==='redButton')return 'Нажать';if(action==='box')return state.opened?'Осмотреть':'Открыть';if(action==='drawer')return 'Открыть ящик';if(action==='panel')return !state.fuse?'Осмотреть':!state.installed?'Вставить предохранитель':!state.power?'Включить свет':'Осмотреть';if(action==='exit'||action==='cake'||action==='rescue')return 'Открыть дверь';return 'Осмотреть';}
 function interact(){
+ if(state.zone==='falseAwakening')return;
+ if(state.branch==='rescue'&&rescue.busy)return;
  if(state.zone==='chase'){if(!paused)chase.requestTrust();return;}
  if(paused||mode!=='game'||!target||time-lastInteract<.4)return;lastInteract=time;
  if(target==='codeLock'){if(!state.cake.collapsed){setPaused(true);lockScreen();}return;}
  const result=act(state,target);applyResult(result);
  if(result.line)dialogue.say(result.line);updateHud();
- if(state.branch==='rescue')finish('Ветка «Спасение»','Вы выбрали железную дверь. Эта ветка будет реализована отдельно.');
+
 }
 function applyResult(result){
  state=result.state;
+ if(state.branch==='rescue'){rescue.apply(result,time);return;}
  if(result.effect==='enterCake'){world.enterCake();atmosphere.reset();atmosphere.next=time+15;target=null;input.clear();}
  else if(result.effect==='next'){finish('Следующий эпизод','Вы доверились Верити и открыли дверь. Продолжение сюжета ещё не утверждено.');return;}
  else if(result.effect){world.effect(result.effect,time);sound.effect(result.effect);if(result.effect==='collapse')sound.playCue('transform');}
@@ -88,12 +93,12 @@ function frame(){
  const now=performance.now(),dt=Math.min(.045,(now-last)/1000);last=now;
  if(!paused&&mode==='game'){
   time+=dt;const v=input.sample(dt),camera=world.camera;
-  const locked=chase.active&&['caught','trusting','falling'].includes(chase.state.phase);
+  const locked=rescue.awakening.active&&rescue.awakening.locked||chase.active&&['caught','trusting','falling'].includes(chase.state.phase);
   camera.rotation.y+=locked?0:v.yaw;camera.rotation.x=Math.max(-1.25,Math.min(1.25,camera.rotation.x+(locked?0:v.pitch)));
-  const yaw=camera.rotation.y,speed=chase.active?chase.speed(v,settings.mobile):2.3;
+  const yaw=camera.rotation.y,speed=locked?0:chase.active?chase.speed(v,settings.mobile):2.3;
   const dx=(Math.sin(yaw)*v.forward+Math.cos(yaw)*v.side)*speed*dt,dz=(Math.cos(yaw)*v.forward-Math.sin(yaw)*v.side)*speed*dt;
   const p=movePlayer(camera.position,dx,dz,world.obstacles);const moved=Math.hypot(p.x-camera.position.x,p.z-camera.position.z);camera.position.x=p.x;camera.position.z=p.z;
-  const bob=settings.motion&&moved>.001?Math.sin(time*11)*.012:0;camera.position.y=1.65+bob;
+  const bob=settings.motion&&moved>.001?Math.sin(time*11)*.012:0;if(!rescue.awakening.active||!rescue.awakening.locked)camera.position.y=1.65+bob;
   if(moved>.001){stepTime+=dt;if(stepTime>(chase.active&&speed>3?.28:.48)){sound.effect('step',camera.position.z>5?'carpet':'wood');stepTime=0;}}
   if(chase.active){
    sound.setListener(camera.position,camera.rotation.y);const view=chase.tick(dt,settings.motion);$('#interaction').hidden=true;$('#jump-button').hidden=!view.pit;$('#trust-button').hidden=!view.trust;$('#jump-button').textContent=settings.mobile?'Прыгнуть':'Space · Прыгнуть';
@@ -101,11 +106,17 @@ function frame(){
    $('#chase-shade').style.background=view.fade>0?`rgba(0,0,0,${Math.min(1,view.fade)})`:`radial-gradient(ellipse,transparent 48%,rgba(100,12,0,${view.near*.35}))`;
    if(view.phase==='lost'||view.phase==='continued')endChase(view.phase);world.scene.render();return;
   }
-  const zone=state.zone==='cakeRoom'?'cakeRoom':camera.position.z>26?'doors':camera.position.z>5?'corridor':'bedroom';
+  if(state.branch==='rescue'){
+   const view=rescue.tick(state,time,dt,settings.motion);state=view.state;if(view.changed){input.clear();target=null;updateHud();}
+   $('#chase-shade').style.background=`rgba(0,0,0,${view.fade})`;
+   if(view.ending){state.endingId=view.ending;mode='ending';dialogue.stop();setPaused(true);$('#hud').hidden=true;screen.hidden=false;screen.innerHTML=rescueEnding();screen.querySelector('button').focus();world.scene.render();return;}
+   if(rescue.awakening.active){sound.setListener(camera.position,camera.rotation.y);$('#interaction').hidden=true;world.scene.render();return;}
+  }
+  const zone=state.zone==='rescueRoom'?'rescueRoom':state.zone==='cakeRoom'?'cakeRoom':camera.position.z>26?'doors':camera.position.z>5?'corridor':'bedroom';
   if(zone!==state.zone){state.zone=zone;updateHud();if(zone!=='bedroom'&&!shownZones.has(zone)){shownZones.add(zone);dialogue.say(zone==='doors'?'doors':'corridor');}}
-  if(zone!=='cakeRoom'&&camera.position.z>17&&!shownZones.has('middle')){shownZones.add('middle');dialogue.say('middle');}
+  if(!state.branch&&zone!=='cakeRoom'&&camera.position.z>17&&!shownZones.has('middle')){shownZones.add('middle');dialogue.say('middle');}
   sound.setListener(camera.position,camera.rotation.y);
-  const ambientEvent=atmosphere.update(time,zone);if(ambientEvent){sound.ambientEvent(ambientEvent.kind,zone==='cakeRoom'?[15.7,1.5,1]:ambientEvent.position);if(zone!=='bedroom'&&zone!=='cakeRoom')world.disturb(time);}
+  const ambientEvent=state.branch==='rescue'?null:atmosphere.update(time,zone);if(ambientEvent){sound.ambientEvent(ambientEvent.kind,zone==='cakeRoom'?[15.7,1.5,1]:ambientEvent.position);if(zone!=='bedroom'&&zone!=='cakeRoom')world.disturb(time);}
   if(zone==='cakeRoom'){
    const distance=Math.hypot(camera.position.x-17,camera.position.z-4.12);const reaction=cakeProximity(state.cake,distance,dt);state.cake=reaction.state;
    if(reaction.line)dialogue.say(reaction.line);
@@ -113,7 +124,7 @@ function frame(){
   const transformed=world.update(time,dt,settings.motion);dialogue.tick(dt);
   if(transformed){beginChase();world.scene.render();return;}
   const hit=world.scene.pickWithRay(camera.getForwardRay(2.55),mesh=>mesh.isPickable&&mesh.isEnabled());
-  target=hit?.hit?hit.pickedMesh.metadata?.action:null;
+  target=hit?.hit?hit.pickedMesh.metadata?.action:null;if(state.branch==='rescue'&&rescue.busy)target=null;
   $('#interaction').hidden=!target;$('#reticle').classList.toggle('active',!!target);
   if(target){$('#target-label').textContent=targetNames[target];$('#action-label').textContent=targetText(target);}
  }
@@ -130,7 +141,7 @@ app.addEventListener('click',e=>{
   else lockScreen('Неверная последовательность. Попробуйте ещё раз.');
  }
 
- if(qa&&action?.startsWith('qa-')){start().then(()=>{dialogue.stop();if(action==='qa-cake'){state.opened=state.fuse=state.installed=state.power=true;state.zone='cakeRoom';world.enterCake();updateHud();}else{beginChase();if(action==='qa-pit'){world.camera.position.set(80,1.65,152);chase.monster.position={x:80,z:145};}}});}
+ if(qa&&action?.startsWith('qa-')){start().then(()=>{dialogue.stop();if(action==='qa-rescue'){state.opened=state.fuse=state.installed=state.power=state.doorOpen=true;state.zone='doors';world.camera.position.set(2.1,1.65,29.8);world.camera.rotation.set(0,0,0);updateHud();}else if(action==='qa-wake'){state.branch='rescue';state.zone='falseAwakening';rescue.awakening.start();updateHud();}else if(action==='qa-cake'){state.opened=state.fuse=state.installed=state.power=true;state.zone='cakeRoom';world.enterCake();updateHud();}else{beginChase();if(action==='qa-pit'){world.camera.position.set(80,1.65,152);chase.monster.position={x:80,z:145};}}});}
  if(action==='retry-chase')beginChase();
  if(action==='start'||action==='restart')start();if(action==='menu')menu();if(action==='settings')settingsScreen();
  if(action==='resume'){screen.hidden=true;setPaused(false);canvas.focus();}
@@ -154,8 +165,10 @@ document.addEventListener('keydown',e=>{
 window.addEventListener('resize',()=>world?.engine.resize());
 try{
  world=createWorld(canvas,settings.quality);world.reset();chase=new Chase(world,sound);input=new Input(canvas,interact,pause,()=>settings.sensitivity,()=>chase.requestJump());input.bindJoystick($('#joystick'),$('#joystick-knob'));
- dialogue=new Dialogue(sound,world.verity,showSubtitle);await dialogue.init();chase.dialogue=dialogue;
+ dialogue=new Dialogue(sound,world.verity,showSubtitle);await dialogue.init();chase.dialogue=dialogue;rescue=new Rescue(world,sound,dialogue);
  // Safari suspends animation frames for occluded windows. Draw a ready first frame explicitly.
  await world.scene.whenReadyAsync();world.engine.resize();world.scene.render();
+ if(qa)window.__qaScene=()=>world.scene;
+ if(qa)window.__qa07=()=>({position:world.camera.position.asArray(),rotation:world.camera.rotation.asArray(),target,state,phase:rescue.awakening.state.phase,paused,mode,voice:!!dialogue.source,voiceRms:sound.voiceLevel(),meshes:world.scene.meshes.length,lights:world.scene.lights.filter(l=>l.isEnabled()).length});
  save();$('#loading').remove();menu();world.engine.runRenderLoop(frame);
 }catch(error){$('#loading')?.remove();screen.innerHTML='<main class="error-screen"><h1>Не удалось запустить 3D</h1><p>Нужен браузер с поддержкой WebGL. Попробуйте включить аппаратное ускорение и обновить страницу.</p><pre></pre></main>';screen.querySelector('pre').textContent=error.message;console.error(error);}

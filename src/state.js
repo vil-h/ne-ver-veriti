@@ -1,6 +1,8 @@
+import {rescueInitial,rescueAct} from './rescue-state.js';
 import {cakeInitial,cakeAct} from './cake-state.js';
-export const initialState=()=>({opened:false,fuse:false,installed:false,power:false,doorOpen:false,zone:'bedroom',branch:null,cake:cakeInitial()});
+export const initialState=()=>({opened:false,fuse:false,installed:false,power:false,doorOpen:false,zone:'bedroom',branch:null,cake:cakeInitial(),rescue:rescueInitial(),endingId:null});
 export function act(state,action){
+ if(state.zone==='rescueRoom'){const result=rescueAct(state.rescue,action);return {...result,state:{...state,rescue:result.state}};}
  if(state.zone==='cakeRoom'){const result=cakeAct(state.cake,action);return {...result,state:{...state,cake:result.state}};}
  const s={...state};let line=null,effect=null;
  if(s.branch)return {state:s,line,effect};
@@ -11,12 +13,15 @@ export function act(state,action){
   line=!s.fuse?'panelEmpty':!s.installed?'installed':!s.power?'light':'panelOn';
   if(s.installed&&!s.power){s.power=true;effect='power';}else if(s.fuse&&!s.installed){s.installed=true;effect='install';}break;
  case 'exit':line=s.power?'exit':'locked';if(s.power&&!s.doorOpen){s.doorOpen=true;effect='door';}break;
- case 'cake':case 'rescue':if(s.zone==='doors'&&s.doorOpen){s.branch=action;effect=action==='cake'?'enterCake':'branch';if(action==='cake'){s.zone='cakeRoom';line='cakeWelcome';}}break;
+ case 'cake':case 'rescue':if(s.zone==='doors'&&s.doorOpen){s.branch=action;effect=action==='cake'?'enterCake':'openRescue';if(action==='cake'){s.zone='cakeRoom';line='cakeWelcome';}else line='rescueAngry';}break;
  case 'bed':case 'window':case 'wardrobe':line=action;break;
  }
  return {state:s,line,effect};
 }
 export function objective(s){
+ if(s.zone==='falseAwakening')return 'Осмотритесь';
+ if(s.zone==='rescueRoom')return s.rescue.exitOpen?'Пройдите в тёмный проход':s.rescue.unlocked?'Откройте аварийный выход':'Исследуйте техническую комнату';
+ if(s.branch==='rescue')return 'Войдите в техническую комнату';
  if(s.zone==='cakeRoom')return s.cake.collapsed?'За дверью открылся проход. Бегите!':s.cake.unlocked?'Дверь открыта': 'Осмотрите праздничную комнату';
  if(s.zone==='doors')return 'Выберите одну из двух дверей';
  if(s.doorOpen)return 'Исследуйте коридор. Найдите выход';

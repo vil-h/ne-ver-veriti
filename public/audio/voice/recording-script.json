@@ -1,7 +1,119 @@
 {
-  "version": "0.6",
+  "version": "0.7",
   "status": "recorded",
   "lines": [
+    {
+      "id": "rescueAngry",
+      "speaker": "Верити",
+      "text": "Я же говорил тебе, какую дверь выбрать… Почему ты меня не слушаешь?",
+      "emotion": "angry",
+      "file": "audio/voice/19-rescue-angry.mp3"
+    },
+    {
+      "id": "rescueAbandon",
+      "speaker": "Верити",
+      "text": "Ну хорошо. Раз ты такой самостоятельный — выбирайся сам.",
+      "emotion": "angry",
+      "file": "audio/voice/20-rescue-abandon.mp3"
+    },
+    {
+      "id": "rescueVentVoice",
+      "speaker": "Верити",
+      "text": "Ты всё ещё думаешь, что найдёшь выход?",
+      "emotion": "suspicious",
+      "file": "audio/voice/21-rescue-vent.mp3"
+    },
+    {
+      "id": "rescueManual",
+      "speaker": "Вы",
+      "text": "Аварийный запуск: 1. На щитке отключить повреждённую цепь А. 2. Подать резерв Б. 3. На пульте отключить вентиляцию — резерв не выдержит две нагрузки. 4. Подать питание на замок. После щелчка открыть дверь вручную.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "rescueMonitor",
+      "speaker": "Вы",
+      "text": "Это моя спальня. Даже коробка на месте… Кто поставил там камеру? На соседнем экране за этой стеной — ещё одна дверь.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "rescueIsolated",
+      "speaker": "Вы",
+      "text": "Цепь А отключена. Теперь можно подать резерв Б.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "rescueFault",
+      "speaker": "Вы",
+      "text": "Цепь А снова подключена. Защита сбросила резерв. На щитке написано: «А — повреждение изоляции».",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "rescueInterlock",
+      "speaker": "Вы",
+      "text": "Защита не даёт включить резерв. Сначала отключить повреждённую цепь А.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "rescueReserve",
+      "speaker": "Вы",
+      "text": "Резерв Б работает. Осталось перераспределить нагрузку на пульте.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "rescueVentOff",
+      "speaker": "Вы",
+      "text": "Вентиляция отключена. Резерв теперь может питать замок.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "rescueVentOn",
+      "speaker": "Вы",
+      "text": "Вентиляция подключена к резервной линии.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "rescueNoPower",
+      "speaker": "Вы",
+      "text": "АВАРИЙНОЕ ОТПИРАНИЕ. НЕТ ПИТАНИЯ. Инструкция на терминале рядом с мониторами.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "rescueLoad",
+      "speaker": "Вы",
+      "text": "Перегрузка. Резерв выдерживает только одну нагрузку. Нужно отключить вентиляцию на пульте.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "rescueReady",
+      "speaker": "Вы",
+      "text": "АВАРИЙНЫЙ ВЫХОД РАЗБЛОКИРОВАН",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "rescueSealed",
+      "speaker": "Вы",
+      "text": "Дверь захлопнулась. С этой стороны нет ручки.",
+      "emotion": "neutral",
+      "file": null
+    },
+    {
+      "id": "falseWake",
+      "speaker": "Вы",
+      "text": "Это был просто сон…",
+      "emotion": "neutral",
+      "file": null
+    },
     {
       "id": "pitStop",
       "speaker": "Верити",
